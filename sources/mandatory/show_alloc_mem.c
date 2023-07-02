@@ -1,6 +1,6 @@
 #include "malloc.h"
 #include "malloc_util.h"
-#include <stdio.h>
+#include "libft.h"
 
 int __show_alloc_mem(t_page_header *page) {
   t_metadata *block;
@@ -9,7 +9,7 @@ int __show_alloc_mem(t_page_header *page) {
   size_t page_block_sum;
 
   while (page) {
-    printf("page: %p - %p size : %zu bytes\n", page->first_block,
+    ft_printf("page: %p - %p size : %u bytes\n", page->first_block,
            (char *)page->first_block + page->size, page->size);
     block = page->first_block;
     page_block_sum = 0;
@@ -19,7 +19,7 @@ int __show_alloc_mem(t_page_header *page) {
       if (block_size == 0)
         break;
       if (IS_ALLOCATED(block->header)) {
-        printf("%p - %p : %zu bytes (allocated)\n", block,
+        ft_printf("%p - %p : %u bytes (allocated)\n", block,
                (char *)block + block_size, block_size);
         total += block_size;
       }
