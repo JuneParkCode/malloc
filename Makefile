@@ -83,5 +83,5 @@ re		:
 # MAKE TEST
 test	:
 	@make all
-	$(CC)  $(TEST_SRCS) -o $(TEST_FILE_NAME) -L. -l$(LIB_NAME) $(LIBFT_FLAG) $(INC_FLAG)
+	$(CC)  $(TEST_SRCS) -o $(TEST_FILE_NAME) -L. -l$(LIB_NAME) $(INC_FLAG)
 #	$(CC) $(CFLAGS) $(TEST_SRCS) -o $(TEST_FILE_NAME) $(INC_FLAG)
