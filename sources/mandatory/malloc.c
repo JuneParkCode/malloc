@@ -1,6 +1,8 @@
 #include "malloc.h"
 #include "malloc_util.h"
 
+t_arena g_arena;
+
 /**
  * @fn __allocate
  * @brief allocate memory block by size

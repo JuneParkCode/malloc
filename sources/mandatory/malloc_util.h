@@ -8,6 +8,10 @@
 #include <sys/resource.h>
 #include <unistd.h>
 
+#ifndef MAP_ANON
+#define MAP_ANON MAP_ANONYMOUS
+#endif
+
 // FLAG for header
 // FLAG_ALLOC : 1bit, FLAG_PREV_USED : 1bit, FLAG_THREADED : 1bit
 // meta data is size + flags(3bit)
@@ -109,9 +113,9 @@ typedef struct s_arena {
   t_page_header *small_page;          // small page header (allocated page list)
   t_page_header *large_page;          // large page header (allocated page list)
 } t_arena;
+extern t_arena g_arena;
 
-// ARENA
-t_arena g_arena;
+
 // arena
 int __init_arena(t_arena *const arena);
 // block
