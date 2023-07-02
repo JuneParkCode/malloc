@@ -12,7 +12,7 @@
 
 #include "libft.h"
 
-static int	isspace(const char c)
+static int	_isspace(const char c)
 {
 	const char	*spaces = "\t\n\r\v\f ";
 
@@ -68,7 +68,7 @@ int	ft_atoi(const char *str)
 	idx_str = 0;
 	res = 0;
 	checker = 0;
-	while (isspace(str[idx_str]))
+	while (_isspace(str[idx_str]))
 		++idx_str;
 	sign = get_sign(str[idx_str]);
 	while (issign(str[idx_str]))

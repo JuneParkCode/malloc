@@ -13,7 +13,7 @@
 #include <unistd.h>
 #include "libft.h"
 
-static int	get_size(unsigned long long n)
+static int	get_size(long long n)
 {
 	int				size;
 
