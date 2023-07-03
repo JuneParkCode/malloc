@@ -16,7 +16,7 @@ void ft_print_page_info(void *page_start, void *page_end, size_t size) {
 
 /**
  * @fn ft_print_block_info
- * @brief %p - %p : %u bytes (allocated)\n
+ * @brief block: %p - %p : %u bytes (allocated)\n
  */
 void ft_print_block_info(void *block_start, void *block_end, size_t size) {
   ft_putstr("block: ");
