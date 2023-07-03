@@ -1,6 +1,6 @@
 # DEFAULT COMPILE OPTIONS
 CC = cc
-CFLAGS = -Wall -Wextra -Werror -g3
+CFLAGS = -Wall -Wextra -Werror
 
 # ABOUT LIBRARY
 ifeq ($(HOSTTYPE),)
@@ -74,7 +74,7 @@ clean	:
 fclean	:
 	@make clean
 	@make fclean -C $(LIBFT_LIB_DIR)
-	rm -rf $(NAME) $(TEST) $(NAME)
+	rm -rf $(NAME) $(TEST_FILE_NAME)
 
 # MAKE RE
 re		:
