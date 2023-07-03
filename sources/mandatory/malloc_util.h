@@ -1,9 +1,6 @@
 #ifndef MALLOC_UTIL_H
 #define MALLOC_UTIL_H
 
-// debug
-#include <stdio.h>
-
 #include <sys/mman.h>
 #include <sys/resource.h>
 #include <unistd.h>
@@ -113,8 +110,7 @@ typedef struct s_arena {
   t_page_header *small_page;          // small page header (allocated page list)
   t_page_header *large_page;          // large page header (allocated page list)
 } t_arena;
-extern t_arena g_arena;
-
+extern t_arena;
 
 // arena
 int __init_arena(t_arena *const arena);
