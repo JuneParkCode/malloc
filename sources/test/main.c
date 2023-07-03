@@ -1,6 +1,11 @@
 #include "malloc.h"
+#include "test.h"
 
 int main() {
+  test_tiny_size(15);
+  test_small_size(15);
+  test_large_size(15);
+
   const int size = 16;
   char *ptr[size];
 

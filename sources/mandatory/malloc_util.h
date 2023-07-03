@@ -110,7 +110,7 @@ typedef struct s_arena {
   t_page_header *small_page;          // small page header (allocated page list)
   t_page_header *large_page;          // large page header (allocated page list)
 } t_arena;
-extern t_arena;
+extern t_arena g_arena;
 
 // arena
 int __init_arena(t_arena *const arena);
@@ -139,5 +139,16 @@ void *__append_tiny_pool(t_arena *const arena);
 void __free_tiny_block(t_arena *arena, t_tiny_metadata *block);
 void __free_small_block(t_arena *arena, t_common_metadata *block);
 void __free_large_block(t_arena *arena, t_common_metadata *block);
+
+// util functions
+void *ft_memcpy(void *dst, const void *src, size_t n);
+int ft_putaddr(void *addr);
+int ft_putchar(const char c);
+int ft_puthex(unsigned long long n, int flag);
+int ft_putnbr(const long long n);
+int ft_putstr(const char *str);
+size_t ft_strlen(const char *s);
+void ft_print_page_info(void *block_start, void *block_end, size_t size);
+void ft_print_block_info(void *block_start, void *block_end, size_t size);
 
 #endif

@@ -10,16 +10,10 @@ endif
 LIB_NAME = ft_malloc_$(HOSTTYPE)
 NAME = lib$(LIB_NAME).so
 
-LIBFT_LIB_DIR = ./libft
-LIBFT_FLAG =	-L $(LIBFT_LIB_DIR) -l ft
-
 ifdef WITH_BONUS
-	INC_FLAG =	-I sources/bonus \
-							-I includes \
-							-I $(LIBFT_LIB_DIR)/include
+	INC_FLAG =	-I sources/bonus 
 else
-	INC_FLAG = 	-I sources/mandatory \
-							-I $(LIBFT_LIB_DIR)/include
+	INC_FLAG = 	-I sources/mandatory 
 endif
 
 # SOURCES
@@ -33,12 +27,23 @@ SRCS			= $(MANDATORY_DIR)/malloc.c \
 						$(MANDATORY_DIR)/show_alloc_mem.c \
 						$(MANDATORY_DIR)/arena.c \
 						$(MANDATORY_DIR)/block.c \
-						$(MANDATORY_DIR)/pool.c
+						$(MANDATORY_DIR)/pool.c \
+						$(MANDATORY_DIR)/ft_memcpy.c \
+						$(MANDATORY_DIR)/ft_print.c \
+						$(MANDATORY_DIR)/ft_putaddr.c \
+						$(MANDATORY_DIR)/ft_putchar.c \
+						$(MANDATORY_DIR)/ft_puthex.c \
+						$(MANDATORY_DIR)/ft_putnbr.c \
+						$(MANDATORY_DIR)/ft_putstr.c \
+						$(MANDATORY_DIR)/ft_strlen.c
+
 
 MANDATORY_OBJS	= ${SRCS:.c=.o}
 BONUS_SRCS		= $(BONUS_DIR)/malloc.c
 BONUS_OBJS		= ${BONUS_SRCS:.c=.o}
-TEST_SRCS		= $(TEST_DIR)/main.c
+TEST_SRCS		= $(TEST_DIR)/main.c \
+							$(TEST_DIR)/test_malloc.c
+TEST_OBJS		= ${TEST_SRCS:.c=.o}
 
 # MAKE OPTION
 ifdef WITH_BONUS
@@ -62,26 +67,27 @@ bonus	:
 
 # MAKE LIB
 $(NAME)	: $(OBJ)
-	@make -C $(LIBFT_LIB_DIR)
-	$(CC) -shared $(CFLAGS) $(OBJ) -o $(NAME) $(LIBFT_FLAG)
+	$(CC) -shared $(CFLAGS) $(OBJ) -o $(NAME)
 
 # MAKE CLEAN
 clean	: 
 	rm -rf $(MANDATORY_OBJS) $(BONUS_OBJS)
-	@make clean -C $(LIBFT_LIB_DIR)
 
 # MAKE FCLEAN
 fclean	:
 	@make clean
-	@make fclean -C $(LIBFT_LIB_DIR)
 	rm -rf $(NAME) $(TEST_FILE_NAME)
 
 # MAKE RE
 re		:
 	@make fclean
 	@make all
+
+test_build : 
+	$(CC)  $(TEST_SRCS) -o $(TEST_FILE_NAME) -L. -l$(LIB_NAME) $(INC_FLAG)
+
 # MAKE TEST
 test	:
 	@make all
-	$(CC)  $(TEST_SRCS) -o $(TEST_FILE_NAME) -L. -l$(LIB_NAME) $(INC_FLAG)
+	@make test_build
 #	$(CC) $(CFLAGS) $(TEST_SRCS) -o $(TEST_FILE_NAME) $(INC_FLAG)

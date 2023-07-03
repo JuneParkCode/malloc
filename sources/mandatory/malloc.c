@@ -1,5 +1,6 @@
 #include "malloc.h"
 #include "malloc_util.h"
+#include <stdio.h>
 
 t_arena g_arena;
 
