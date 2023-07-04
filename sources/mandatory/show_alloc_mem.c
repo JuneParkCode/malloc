@@ -8,8 +8,8 @@ int __show_alloc_mem(t_page_header *page) {
   size_t page_block_sum;
 
   while (page) {
-    ft_print_page_info(page->first_block,
-                       (__uint8_t *)page->first_block + page->size, page->size);
+    ft_print_page_info(page->first_block - sizeof(t_page_header),
+                       page->first_block + page->size, page->size);
     block = page->first_block;
     page_block_sum = 0;
     while (page_block_sum < page->size) {
@@ -18,10 +18,10 @@ int __show_alloc_mem(t_page_header *page) {
       if (block_size == 0)
         break;
       if (IS_ALLOCATED(block->header)) {
-        ft_print_block_info(block, (__uint8_t *)block + block_size, block_size);
+        ft_print_allocated_block_info(block, block + block_size, block_size);
         total += block_size;
       }
-      block = (t_metadata *)((__uint8_t *)block + block_size);
+      block = (t_metadata *)(block + block_size);
     }
     page = page->next;
   }
