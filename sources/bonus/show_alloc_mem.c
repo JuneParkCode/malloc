@@ -1,7 +1,9 @@
-#include "malloc.h"
-#include "malloc_util.h"
+#include "malloc_bonus.h"
+#include "malloc_util_bonus.h"
 
 int __show_alloc_mem(t_page_header *page) {
+  ft_putstr(__FUNCTION__);
+  ft_putchar('\n');
   t_metadata *block;
   size_t total = 0;
   size_t block_size = 0;
@@ -29,21 +31,32 @@ int __show_alloc_mem(t_page_header *page) {
 }
 
 void show_alloc_mem(void) {
-  t_arena *arena = &g_arena;
+  ft_putstr(__FUNCTION__);
+  ft_putchar('\n');
+  t_arena *arena;
   size_t total = 0;
 
   ft_putstr("allocated memory blocks:\n");
-  if (arena->tiny_page) {
-    ft_putstr("TINY\n");
-    total += __show_alloc_mem(arena->tiny_page);
+  ft_putstr("TINY\n");
+  for (int i = 0; i < MAX_ARENA_NUMBER; ++i) {
+    arena = &g_arenas[i];
+    if (arena->tiny_page) {
+      total += __show_alloc_mem(arena->tiny_page);
+    }
   }
-  if (arena->small_page) {
-    ft_putstr("SMALL\n");
-    total += __show_alloc_mem(arena->small_page);
+  ft_putstr("SMALL\n");
+  for (int i = 0; i < MAX_ARENA_NUMBER; ++i) {
+    arena = &g_arenas[i];
+    if (arena->small_page) {
+      total += __show_alloc_mem(arena->small_page);
+    }
   }
-  if (arena->large_page) {
-    ft_putstr("LARGE\n");
-    total += __show_alloc_mem(arena->large_page);
+  ft_putstr("LARGE\n");
+  for (int i = 0; i < MAX_ARENA_NUMBER; ++i) {
+    arena = &g_arenas[i];
+    if (arena->large_page) {
+      total += __show_alloc_mem(arena->large_page);
+    }
   }
   ft_putstr("Total : ");
   ft_putnbr(total);

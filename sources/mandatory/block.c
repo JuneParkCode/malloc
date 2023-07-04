@@ -13,7 +13,7 @@
 void *__split_small_block(t_arena *const arena, void *const block,
                           const size_t size) {
   t_common_metadata *free_block =
-      (t_common_metadata *)((char *)(block + size)); // splited free block
+      (t_common_metadata *)((__uint8_t *)(block + size)); // splited free block
   size_t original_block_size = GET_BLOCK_SIZE(GET_HEADER(block));
   size_t free_block_size = original_block_size - size;
 
@@ -39,7 +39,7 @@ void *__split_small_block(t_arena *const arena, void *const block,
 void *__split_tiny_block(t_arena *const arena, void *const block,
                          const size_t size) {
   t_tiny_metadata *free_block =
-      (t_tiny_metadata *)((char *)(block + size)); // splited free block
+      (t_tiny_metadata *)((__uint8_t *)(block + size)); // splited free block
   size_t original_block_size = GET_BLOCK_SIZE(GET_HEADER(block));
   size_t free_block_size = original_block_size - size;
 
@@ -88,7 +88,8 @@ void *__set_small_block(void *const block, const size_t header,
     meta_data->next_block = next_block;
     meta_data->prev_block = prev_block;
     block_size = GET_BLOCK_SIZE(meta_data->header);
-    block_footer = (size_t *)((char *)(block + block_size - sizeof(size_t)));
+    block_footer =
+        (size_t *)((__uint8_t *)(block + block_size - sizeof(size_t)));
     *block_footer = block_size;
   }
   return (block);

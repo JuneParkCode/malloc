@@ -1,6 +1,6 @@
 # DEFAULT COMPILE OPTIONS
 CC = cc
-CFLAGS = -Wall -Wextra -Werror
+CFLAGS = -Wall -Wextra -Werror -g3
 
 # ABOUT LIBRARY
 ifeq ($(HOSTTYPE),)
@@ -19,7 +19,8 @@ endif
 # SOURCES
 MANDATORY_DIR	= sources/mandatory
 BONUS_DIR 		= sources/bonus
-TEST_DIR		= sources/test
+TEST_DIR		= sources/test/mandatory
+TEST_BONUS_DIR	= sources/test/bonus
 
 SRCS			= $(MANDATORY_DIR)/malloc.c \
 						$(MANDATORY_DIR)/free.c \
@@ -39,11 +40,29 @@ SRCS			= $(MANDATORY_DIR)/malloc.c \
 
 
 MANDATORY_OBJS	= ${SRCS:.c=.o}
-BONUS_SRCS		= $(BONUS_DIR)/malloc.c
+BONUS_SRCS		= $(BONUS_DIR)/malloc.c \
+					$(BONUS_DIR)/malloc_flush_thread_cache.c \
+					$(BONUS_DIR)/free.c \
+					$(BONUS_DIR)/realloc.c \
+					$(BONUS_DIR)/show_alloc_mem.c \
+					$(BONUS_DIR)/arena.c \
+					$(BONUS_DIR)/block.c \
+					$(BONUS_DIR)/pool.c \
+					$(BONUS_DIR)/ft_memcpy.c \
+					$(BONUS_DIR)/ft_print.c \
+					$(BONUS_DIR)/ft_putaddr.c \
+					$(BONUS_DIR)/ft_putchar.c \
+					$(BONUS_DIR)/ft_puthex.c \
+					$(BONUS_DIR)/ft_putnbr.c \
+					$(BONUS_DIR)/ft_putstr.c \
+					$(BONUS_DIR)/ft_strlen.c
 BONUS_OBJS		= ${BONUS_SRCS:.c=.o}
 TEST_SRCS		= $(TEST_DIR)/main.c \
-							$(TEST_DIR)/test_malloc.c
+					$(TEST_DIR)/test_malloc.c
+TEST_BONUS_SRCS		= $(TEST_BONUS_DIR)/main.c \
+					$(TEST_BONUS_DIR)/test_malloc.c
 TEST_OBJS		= ${TEST_SRCS:.c=.o}
+TEST_BONUS_OBJS		= ${TEST_BONUSSRCS:.c=.o}
 
 # MAKE OPTION
 ifdef WITH_BONUS
@@ -71,7 +90,7 @@ $(NAME)	: $(OBJ)
 
 # MAKE CLEAN
 clean	: 
-	rm -rf $(MANDATORY_OBJS) $(BONUS_OBJS)
+	rm -rf $(MANDATORY_OBJS) $(BONUS_OBJS) $(TEST_OBJS) $(TEST_BONUS_OBJS)
 
 # MAKE FCLEAN
 fclean	:
@@ -84,10 +103,17 @@ re		:
 	@make all
 
 test_build : 
-	$(CC)  $(TEST_SRCS) -o $(TEST_FILE_NAME) -L. -l$(LIB_NAME) $(INC_FLAG)
+	$(CC) $(CFLAGS) $(TEST_SRCS) -o $(TEST_FILE_NAME) -L. -l$(LIB_NAME) $(INC_FLAG)
+
+test_bonus_build : 
+	$(CC) $(CFLAGS) $(TEST_BONUS_SRCS) -o $(TEST_FILE_NAME) -L. -l$(LIB_NAME) $(INC_FLAG)
 
 # MAKE TEST
 test	:
 	@make all
 	@make test_build
+
+test_bonus	:
+	@make bonus
+	@make test_bonus_build WITH_BONUS=1
 #	$(CC) $(CFLAGS) $(TEST_SRCS) -o $(TEST_FILE_NAME) $(INC_FLAG)
