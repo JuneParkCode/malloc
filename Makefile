@@ -1,6 +1,6 @@
 # DEFAULT COMPILE OPTIONS
 CC = cc
-CFLAGS = -Wall -Wextra -Werror -g3
+CFLAGS = -Wall -Wextra -Werror
 
 # ABOUT LIBRARY
 ifeq ($(HOSTTYPE),)
