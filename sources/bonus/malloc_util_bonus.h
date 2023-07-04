@@ -180,7 +180,9 @@ int ft_putnbr(const long long n);
 int ft_putstr(const char *str);
 size_t ft_strlen(const char *s);
 void ft_print_page_info(void *block_start, void *block_end, size_t size);
-void ft_print_block_info(void *block_start, void *block_end, size_t size);
+void ft_print_allocated_block_info(void *block_start, void *block_end,
+                                   size_t size);
+void ft_print_free_block_info(void *block_start, void *block_end, size_t size);
 size_t __flush_tiny_pool(t_arena *const arena, t_tcache *const cache);
 size_t __flush_small_pool(t_arena *const arena, t_tcache *const cache);
 

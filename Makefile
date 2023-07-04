@@ -1,6 +1,6 @@
 # DEFAULT COMPILE OPTIONS
 CC = cc
-CFLAGS = -Wall -Wextra -Werror -g3
+CFLAGS = -Wall -Wextra -Werror
 
 # ABOUT LIBRARY
 ifeq ($(HOSTTYPE),)
@@ -45,6 +45,7 @@ BONUS_SRCS		= $(BONUS_DIR)/malloc.c \
 					$(BONUS_DIR)/free.c \
 					$(BONUS_DIR)/realloc.c \
 					$(BONUS_DIR)/show_alloc_mem.c \
+					$(BONUS_DIR)/debug_utils.c \
 					$(BONUS_DIR)/arena.c \
 					$(BONUS_DIR)/block.c \
 					$(BONUS_DIR)/pool.c \

@@ -7,8 +7,6 @@ extern _Atomic int __thread_count;
  * @brief get arena. it will assigned by thread count. (round robin)
  */
 t_arena *__get_arena(t_tcache *const cache) {
-  ft_putstr(__FUNCTION__);
-  ft_putchar('\n');
   if (cache->arena_idx == -1) {
     ++__thread_count;
     cache->arena_idx = (__thread_count % MAX_ARENA_NUMBER);
@@ -21,9 +19,7 @@ t_arena *__get_arena(t_tcache *const cache) {
  * @brief append arena's large page.
  */
 void *__append_arena_large_page(t_arena *arena, void *alloc, size_t size) {
-  ft_putstr(__FUNCTION__);
-  ft_putchar('\n');
-  t_page_header *alloc_pool = alloc_pool = arena->large_page;
+  t_page_header *alloc_pool = arena->large_page;
 
   if (alloc_pool) {
     while (alloc_pool->next) {
@@ -34,6 +30,7 @@ void *__append_arena_large_page(t_arena *arena, void *alloc, size_t size) {
     arena->large_page = alloc;
   }
   alloc_pool = alloc;
+  alloc_pool->next = NULL;
   alloc_pool->first_block = alloc + sizeof(t_page_header);
   alloc_pool->size = size;
   return (alloc_pool);
@@ -41,8 +38,6 @@ void *__append_arena_large_page(t_arena *arena, void *alloc, size_t size) {
 
 t_arena *__find_tiny_block_original_arena(t_arena *thread_arena,
                                           t_metadata *block) {
-  ft_putstr(__FUNCTION__);
-  ft_putchar('\n');
   t_page_header *page = NULL;
   int idx = 0;
 
@@ -74,8 +69,6 @@ t_arena *__find_tiny_block_original_arena(t_arena *thread_arena,
 
 t_arena *__find_small_block_original_arena(t_arena *thread_arena,
                                            t_metadata *block) {
-  ft_putstr(__FUNCTION__);
-  ft_putchar('\n');
   t_page_header *page = NULL;
   int idx = 0;
 
@@ -107,10 +100,8 @@ t_arena *__find_small_block_original_arena(t_arena *thread_arena,
 
 t_arena *__find_large_block_original_arena(t_arena *thread_arena,
                                            t_metadata *block) {
-  ft_putstr(__FUNCTION__);
-  ft_putchar('\n');
-  t_page_header *page = NULL;
-  int idx = 0;
+  t_page_header *page;
+  int idx;
 
   // first, find in thread_arena
   page = thread_arena->large_page;
@@ -121,6 +112,7 @@ t_arena *__find_large_block_original_arena(t_arena *thread_arena,
     page = page->next;
   }
   // find in other arenas
+  idx = 0;
   while (idx < MAX_ARENA_NUMBER) {
     if (thread_arena == &g_arenas[idx]) {
       ++idx;
@@ -130,7 +122,7 @@ t_arena *__find_large_block_original_arena(t_arena *thread_arena,
     while (page) {
       if ((void *)page <= (void *)block &&
           (__uint8_t *)block <= ((__uint8_t *)page + page->size))
-        return (thread_arena);
+        return (&g_arenas[idx]);
       page = page->next;
     }
     ++idx;

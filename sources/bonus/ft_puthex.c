@@ -1,8 +1,6 @@
 #include "malloc_util_bonus.h"
 
 static int get_size(long long n) {
-  ft_putstr(__FUNCTION__);
-  ft_putchar('\n');
   int size;
 
   size = (n < 0);
@@ -20,8 +18,6 @@ static int get_size(long long n) {
  * @brief put hex to stdout
  */
 int ft_puthex(unsigned long long n, int flag) {
-  ft_putstr(__FUNCTION__);
-  ft_putchar('\n');
   const int len = get_size(n);
   char str[20];
   char *hex;

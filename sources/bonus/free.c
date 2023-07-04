@@ -14,13 +14,13 @@ extern __thread t_tcache __tcache;
  * to abort() if (!IS_ALLOCATED(meta_data->header)
  */
 void free(void *ptr) {
-  ft_putstr(__FUNCTION__);
-  ft_putchar('\n');
   void *const block = ptr - sizeof(size_t);
   t_metadata *const meta_data = (t_metadata *)block;
   t_tcache *const cache = &__tcache;
   t_arena *const arena = __get_arena(cache);
 
+  if (ptr == 0)
+    return;
   pthread_mutex_lock(&arena->lock);
   if (IS_TINY_BLOCK(meta_data->header)) {
     __free_tiny_block(arena, cache, block);
@@ -45,8 +45,6 @@ void free(void *ptr) {
  */
 void __free_tiny_block(t_arena *arena, t_tcache *cache,
                        t_tiny_metadata *block) {
-  ft_putstr(__FUNCTION__);
-  ft_putchar('\n');
   int flag = (IS_PREV_USED(block->header) ? FLAG_PREV_USED : 0);
   t_arena *block_original_arena =
       __find_tiny_block_original_arena(arena, (t_metadata *)block);
@@ -75,8 +73,6 @@ void __free_tiny_block(t_arena *arena, t_tcache *cache,
  */
 void __free_small_block(t_arena *arena, t_tcache *cache,
                         t_common_metadata *block) {
-  ft_putstr(__FUNCTION__);
-  ft_putchar('\n');
   int flag = (IS_PREV_USED(block->header) ? FLAG_PREV_USED : 0);
   t_arena *block_original_arena =
       __find_small_block_original_arena(arena, (t_metadata *)block);
@@ -108,13 +104,18 @@ void __free_small_block(t_arena *arena, t_tcache *cache,
  * @return void
  */
 void __free_large_block(t_arena *arena, t_common_metadata *block) {
-  ft_putstr(__FUNCTION__);
-  ft_putchar('\n');
-  t_arena *block_original_arena =
-      __find_large_block_original_arena(arena, (t_metadata *)block);
-  t_page_header *page = block_original_arena->large_page;
+  t_arena *block_original_arena = NULL;
+  t_page_header *page = NULL;
   t_page_header *prev_page = NULL;
+  int flag = 0;
 
+  block_original_arena =
+      __find_large_block_original_arena(arena, (t_metadata *)block);
+  if (!block_original_arena)
+    return;
+  page = block_original_arena->large_page;
+  flag = (IS_PREV_USED(block->header) ? FLAG_PREV_USED : 0);
+  __set_large_block(block, SET_HEADER(GET_BLOCK_SIZE(block->header), flag));
   while (page) {
     if (page->first_block == block) {
       if (prev_page) {

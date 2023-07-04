@@ -9,6 +9,5 @@ typedef struct s_arg {
 void *test_tiny_size(void *arg);
 void *test_small_size(void *arg);
 void *test_large_size(void *arg);
-void *test_fail_case();
 
 #endif

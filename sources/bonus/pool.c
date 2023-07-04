@@ -7,8 +7,6 @@
  * @return initialized pool ptr, or NULL if failed
  */
 void *__init_small_pool(void *const new_pool, t_arena *const arena) {
-  ft_putstr(__FUNCTION__);
-  ft_putchar('\n');
   t_page_header *alloc_pool = arena->small_page;
 
   if (new_pool == (void *)-1)
@@ -35,8 +33,6 @@ void *__init_small_pool(void *const new_pool, t_arena *const arena) {
  * @return initialized pool ptr, or NULL if failed
  */
 void *__init_tiny_pool(void *const new_pool, t_arena *const arena) {
-  ft_putstr(__FUNCTION__);
-  ft_putchar('\n');
   t_page_header *alloc_pool = arena->tiny_page;
 
   if (new_pool == (void *)-1)
@@ -62,8 +58,6 @@ void *__init_tiny_pool(void *const new_pool, t_arena *const arena) {
  * @return appended pool ptr, or NULL if failed
  */
 void *__append_small_pool(t_arena *const arena) {
-  ft_putstr(__FUNCTION__);
-  ft_putchar('\n');
   void *const new_pool = mmap(0, MALLOC_SMALL_POOL_SIZE, PROT_READ | PROT_WRITE,
                               MAP_ANON | MAP_PRIVATE, -1, 0);
   t_common_metadata *new_pool_block;
@@ -91,8 +85,6 @@ void *__append_small_pool(t_arena *const arena) {
  * @return appended pool ptr, or NULL if failed
  */
 void *__append_tiny_pool(t_arena *const arena) {
-  ft_putstr(__FUNCTION__);
-  ft_putchar('\n');
   void *const new_pool = mmap(0, MALLOC_TINY_POOL_SIZE, PROT_READ | PROT_WRITE,
                               MAP_ANON | MAP_PRIVATE, -1, 0);
   t_tiny_metadata *new_pool_block;

@@ -5,8 +5,6 @@
  * @brief get string length
  */
 size_t ft_strlen(const char *s) {
-  ft_putstr(__FUNCTION__);
-  ft_putchar('\n');
   size_t length;
 
   length = 0;

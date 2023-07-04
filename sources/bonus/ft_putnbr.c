@@ -1,8 +1,6 @@
 #include "malloc_util_bonus.h"
 
 static int get_size(const long long n) {
-  ft_putstr(__FUNCTION__);
-  ft_putchar('\n');
   unsigned int nb;
   int size;
 
@@ -25,8 +23,6 @@ static int get_size(const long long n) {
  * @brief put number to stdout
  */
 int ft_putnbr(const long long n) {
-  ft_putstr(__FUNCTION__);
-  ft_putchar('\n');
   const unsigned int size = get_size(n);
   unsigned int nb;
   unsigned int idx;

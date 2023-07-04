@@ -5,8 +5,6 @@
  * @brief put string to stdout
  */
 int ft_putstr(const char *str) {
-  ft_putstr(__FUNCTION__);
-  ft_putchar('\n');
   size_t len;
 
   if (str == NULL) {

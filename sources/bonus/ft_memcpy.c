@@ -7,8 +7,6 @@
  * overlapped, behaviour is undefined)
  */
 void *ft_memcpy(void *dst, const void *src, size_t n) {
-  ft_putstr(__FUNCTION__);
-  ft_putchar('\n');
   size_t idx_byte;
   __uint8_t *dest;
   __uint8_t *source;

@@ -19,8 +19,6 @@
  * fails or free(ptr) was called with size equal to zero.
  */
 void *realloc(void *ptr, size_t size) {
-  ft_putstr(__FUNCTION__);
-  ft_putchar('\n');
   t_metadata *const meta_data = ptr - sizeof(size_t);
   const size_t current_block_size = GET_BLOCK_SIZE(meta_data->header);
   const size_t request_block_size = __get_request_block_size(size);

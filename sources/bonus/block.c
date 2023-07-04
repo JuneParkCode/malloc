@@ -12,8 +12,6 @@
  */
 void *__split_small_block(t_arena *const arena, t_tcache *const cache,
                           void *const block, const size_t size) {
-  ft_putstr(__FUNCTION__);
-  ft_putchar('\n');
   t_common_metadata *free_block =
       (t_common_metadata *)((__uint8_t *)(block + size)); // splited free block
   size_t original_block_size = GET_BLOCK_SIZE(GET_HEADER(block));
@@ -52,8 +50,6 @@ void *__split_small_block(t_arena *const arena, t_tcache *const cache,
  */
 void *__split_tiny_block(t_arena *const arena, t_tcache *const cache,
                          void *const block, const size_t size) {
-  ft_putstr(__FUNCTION__);
-  ft_putchar('\n');
   t_tiny_metadata *free_block =
       (t_tiny_metadata *)((__uint8_t *)(block + size)); // splited free block
   size_t original_block_size = GET_BLOCK_SIZE(GET_HEADER(block));
@@ -86,8 +82,6 @@ void *__split_tiny_block(t_arena *const arena, t_tcache *const cache,
  */
 void *__set_tiny_block(void *const block, const size_t header,
                        void *next_block) {
-  ft_putstr(__FUNCTION__);
-  ft_putchar('\n');
   t_tiny_metadata *meta_data = block;
 
   meta_data->header = header;
@@ -107,8 +101,6 @@ void *__set_tiny_block(void *const block, const size_t header,
  */
 void *__set_small_block(void *const block, const size_t header,
                         void *next_block, void *prev_block) {
-  ft_putstr(__FUNCTION__);
-  ft_putchar('\n');
   t_common_metadata *meta_data = block;
   size_t *block_footer = NULL; // footer will be last 8 byte of block
   size_t block_size;
@@ -133,8 +125,6 @@ void *__set_small_block(void *const block, const size_t header,
  * @return metadata set memory
  */
 void *__set_large_block(void *const block, const size_t header) {
-  ft_putstr(__FUNCTION__);
-  ft_putchar('\n');
   size_t *block_header = (size_t *)(block);
 
   *block_header = header;
@@ -150,8 +140,6 @@ void *__set_large_block(void *const block, const size_t header) {
  */
 void *__allocate_tiny_block(t_arena *const arena, t_tcache *const cache,
                             const size_t size) {
-  ft_putstr(__FUNCTION__);
-  ft_putchar('\n');
   void *free_block = __pop_free_tiny_block(arena, cache, size);
 
   if (!free_block) {
@@ -172,8 +160,6 @@ void *__allocate_tiny_block(t_arena *const arena, t_tcache *const cache,
  */
 void *__allocate_small_block(t_arena *const arena, t_tcache *const cache,
                              const size_t size) {
-  ft_putstr(__FUNCTION__);
-  ft_putchar('\n');
   void *free_block = __pop_free_small_block(arena, cache, size);
 
   if (!free_block) {
@@ -195,8 +181,6 @@ void *__allocate_small_block(t_arena *const arena, t_tcache *const cache,
  * @return allocated block, or NULL if failed
  */
 void *__allocate_large_block(t_arena *const arena, const size_t size) {
-  ft_putstr(__FUNCTION__);
-  ft_putchar('\n');
   void *const alloc =
       mmap(0, size, PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE, -1, 0);
   t_page_header *alloc_pool = NULL;
@@ -220,8 +204,6 @@ void *__allocate_large_block(t_arena *const arena, const size_t size) {
  */
 void *__pop_free_tiny_block(t_arena *const arena, t_tcache *const cache,
                             const size_t size) {
-  ft_putstr(__FUNCTION__);
-  ft_putchar('\n');
   // find in tcache first (lock free)
   void *ret = __pop_tiny_block_from_thread_cache(cache, size);
 
@@ -242,8 +224,6 @@ void *__pop_free_tiny_block(t_arena *const arena, t_tcache *const cache,
  */
 void *__pop_free_small_block(t_arena *const arena, t_tcache *const cache,
                              const size_t size) {
-  ft_putstr(__FUNCTION__);
-  ft_putchar('\n');
   // find in tcache first (lock free)
   void *ret = __pop_small_block_from_thread_cache(cache, size);
 
@@ -262,8 +242,6 @@ void *__pop_free_small_block(t_arena *const arena, t_tcache *const cache,
  * @return block size
  */
 size_t __get_request_block_size(size_t size) {
-  ft_putstr(__FUNCTION__);
-  ft_putchar('\n');
   const size_t size_with_header = size + sizeof(size_t);
 
   switch (GET_SIZE_TYPE(size_with_header)) {
@@ -286,8 +264,6 @@ size_t __get_request_block_size(size_t size) {
  * @return free block or NULL if there are no free block
  */
 void *__pop_free_tiny_block_from_arena(t_arena *arena, size_t size) {
-  ft_putstr(__FUNCTION__);
-  ft_putchar('\n');
   t_tiny_metadata *pool_block = arena->tiny_free_pool;
   void *ret = NULL;
 
@@ -316,8 +292,6 @@ void *__pop_free_tiny_block_from_arena(t_arena *arena, size_t size) {
  * @return free block or NULL if there are no free block
  */
 void *__pop_free_small_block_from_arena(t_arena *arena, size_t size) {
-  ft_putstr(__FUNCTION__);
-  ft_putchar('\n');
   t_common_metadata *pool_block = arena->small_free_pool;
   void *ret = NULL;
 
@@ -350,8 +324,6 @@ void *__pop_free_small_block_from_arena(t_arena *arena, size_t size) {
  * @return free block or NULL if there are no free block
  */
 void *__pop_tiny_block_from_thread_cache(t_tcache *const cache, size_t size) {
-  ft_putstr(__FUNCTION__);
-  ft_putchar('\n');
   // get data from cache
   t_tiny_metadata *pool_block = cache->tiny_free_pool;
   void *ret = NULL;
@@ -381,8 +353,6 @@ void *__pop_tiny_block_from_thread_cache(t_tcache *const cache, size_t size) {
  * @return free block or NULL if there are no free block
  */
 void *__pop_small_block_from_thread_cache(t_tcache *const cache, size_t size) {
-  ft_putstr(__FUNCTION__);
-  ft_putchar('\n');
   t_common_metadata *pool_block = cache->small_free_pool;
   void *ret = NULL;
 

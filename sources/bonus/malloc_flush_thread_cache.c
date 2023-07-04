@@ -11,8 +11,6 @@ extern __thread t_tcache __tcache;
  * @return size of memory that flushed.
  */
 size_t malloc_flush_thread_cache(void) {
-  ft_putstr(__FUNCTION__);
-  ft_putchar('\n');
   t_tcache *const cache = &__tcache;
   t_arena *const arena = __get_arena(cache);
   size_t flushed_memory = 0;
@@ -30,17 +28,19 @@ size_t malloc_flush_thread_cache(void) {
  * @return size of memory that flushed.
  */
 size_t __flush_tiny_pool(t_arena *const arena, t_tcache *const cache) {
-  ft_putstr(__FUNCTION__);
-  ft_putchar('\n');
   t_tiny_metadata *block;
   t_tiny_metadata *next_block;
   size_t flushed_memory = 0;
+  int flag = 0;
 
   block = cache->tiny_free_pool;
   while (block) {
+    flag = 0;
     flushed_memory += GET_BLOCK_SIZE(block->header);
     next_block = block->next_block;
-    block->next_block = arena->tiny_free_pool;
+    flag = IS_PREV_USED(block->header) ? FLAG_PREV_USED : 0;
+    __set_tiny_block(block, SET_HEADER(GET_BLOCK_SIZE(block->header), flag),
+                     arena->tiny_free_pool);
     arena->tiny_free_pool = block;
     block = next_block;
   }
@@ -54,17 +54,19 @@ size_t __flush_tiny_pool(t_arena *const arena, t_tcache *const cache) {
  * @return size of memory that flushed.
  */
 size_t __flush_small_pool(t_arena *const arena, t_tcache *const cache) {
-  ft_putstr(__FUNCTION__);
-  ft_putchar('\n');
   t_common_metadata *block;
   t_common_metadata *next_block;
   size_t flushed_memory = 0;
+  int flag = 0;
 
   block = cache->small_free_pool;
   while (block) {
+    flag = 0;
     flushed_memory += GET_BLOCK_SIZE(block->header);
     next_block = block->next_block;
-    block->next_block = arena->small_free_pool;
+    flag = IS_PREV_USED(block->header) ? FLAG_PREV_USED : 0;
+    __set_small_block(block, SET_HEADER(GET_BLOCK_SIZE(block->header), flag),
+                      arena->small_free_pool, 0);
     arena->small_free_pool->prev_block = block;
     arena->small_free_pool = block;
     block = next_block;

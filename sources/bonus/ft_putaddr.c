@@ -5,8 +5,6 @@
  * @brief put address of pointer to stdout
  */
 int ft_putaddr(void *addr) {
-  ft_putstr(__FUNCTION__);
-  ft_putchar('\n');
   if (addr == 0) {
     ft_putchar('0');
     return (1);
