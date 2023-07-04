@@ -59,7 +59,7 @@ t_arena *__find_tiny_block_original_arena(t_arena *thread_arena,
     while (page) {
       if ((void *)page <= (void *)block &&
           (__uint8_t *)block <= ((__uint8_t *)page + page->size))
-        return (thread_arena);
+        return (&g_arenas[idx]);
       page = page->next;
     }
     ++idx;
@@ -90,7 +90,7 @@ t_arena *__find_small_block_original_arena(t_arena *thread_arena,
     while (page) {
       if ((void *)page <= (void *)block &&
           (__uint8_t *)block <= ((__uint8_t *)page + page->size))
-        return (thread_arena);
+        return (&g_arenas[idx]);
       page = page->next;
     }
     ++idx;
