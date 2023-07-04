@@ -15,14 +15,17 @@ int main() {
     ptr[i] = malloc(multiple);
     multiple *= 2;
   }
+  printf("After malloc\n");
   show_alloc_mem();
   for (int i = size - 1; i >= 0; --i) {
     ptr[i] = realloc(ptr[i], multiple);
     multiple /= 2;
   }
+  printf("After realloc\n");
   show_alloc_mem();
   for (int i = 0; i < size; ++i) {
     free(ptr[i]);
   }
+  printf("After free.\n");
   show_alloc_mem();
 }
