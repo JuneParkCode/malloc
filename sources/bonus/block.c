@@ -24,7 +24,7 @@ void *__split_small_block(t_arena *const arena, t_tcache *const cache,
     if (cache->small_free_pool) {
       cache->small_free_pool->prev_block = free_block;
     }
-    arena->small_free_pool = free_block;
+    cache->small_free_pool = free_block;
   } else {
     pthread_mutex_lock(&arena->lock);
     __set_small_block(free_block, SET_HEADER(free_block_size, FLAG_PREV_USED),
