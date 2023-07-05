@@ -1,6 +1,9 @@
 #include "malloc_bonus.h"
 #include "malloc_util_bonus.h"
 
+int __show_alloc_mem(t_page_header *page)
+    __attribute__((visibility("default")));
+
 int __show_alloc_mem(t_page_header *page) {
   t_metadata *block;
   size_t total = 0;

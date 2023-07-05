@@ -77,7 +77,7 @@ TEST_FILE_NAME	= test_malloc
 
 # GENERATE OBJECT FILES
 %.o		: %.c
-		$(CC) -fPIC $(CFLAGS) $(INC_FLAG) -c $< -o $@ 
+		$(CC) -fPIC -fvisibility=hidden $(CFLAGS) $(INC_FLAG) -c $< -o $@ 
 
 # MAKE all
 all		: $(NAME)
@@ -88,6 +88,7 @@ bonus	:
 # MAKE LIB
 $(NAME)	: $(OBJ)
 	$(CC) -shared $(CFLAGS) $(OBJ) -o $(NAME)
+#	 strip --strip-all --discard-all $(NAME)
 
 # MAKE CLEAN
 clean	: 

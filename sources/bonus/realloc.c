@@ -1,6 +1,8 @@
 #include "malloc_bonus.h"
 #include "malloc_util_bonus.h"
 
+void *realloc(void *ptr, size_t size) __attribute__((visibility("default")));
+
 /**
  * @fn realloc
  * @brief reallocates a memory block

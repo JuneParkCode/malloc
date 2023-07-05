@@ -4,6 +4,8 @@
 
 t_arena g_arena;
 
+void *malloc(unsigned long size) __attribute__((visibility("default")));
+
 /**
  * @fn __allocate
  * @brief allocate memory block by size

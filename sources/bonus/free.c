@@ -3,6 +3,9 @@
 #include <stdio.h>
 
 extern __thread t_tcache __tcache;
+
+void free(void *ptr) __attribute__((visibility("default")));
+
 /**
  * @fn free
  * @brief free memory

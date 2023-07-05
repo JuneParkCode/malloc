@@ -1,6 +1,7 @@
 #include "malloc.h"
 #include "malloc_util.h"
 
+void free(void *ptr) __attribute__((visibility("default")));
 /**
  * @fn free
  * @brief free memory
