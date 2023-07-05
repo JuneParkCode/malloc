@@ -37,32 +37,38 @@ void show_alloc_mem(void) {
   ft_putstr("TINY\n");
   for (int i = 0; i < MAX_ARENA_NUMBER; ++i) {
     arena = &g_arenas[i];
+    pthread_mutex_lock(&arena->lock);
     if (arena->tiny_page) {
       ft_putstr("arena ");
       ft_putnbr(i);
       ft_putstr(" block info\n");
       total += __show_alloc_mem(arena->tiny_page);
     }
+    pthread_mutex_unlock(&arena->lock);
   }
   ft_putstr("SMALL\n");
   for (int i = 0; i < MAX_ARENA_NUMBER; ++i) {
     arena = &g_arenas[i];
+    pthread_mutex_lock(&arena->lock);
     if (arena->small_page) {
       ft_putstr("arena ");
       ft_putnbr(i);
       ft_putstr(" block info\n");
       total += __show_alloc_mem(arena->small_page);
     }
+    pthread_mutex_unlock(&arena->lock);
   }
   ft_putstr("LARGE\n");
   for (int i = 0; i < MAX_ARENA_NUMBER; ++i) {
     arena = &g_arenas[i];
+    pthread_mutex_lock(&arena->lock);
     if (arena->large_page) {
       ft_putstr("arena ");
       ft_putnbr(i);
       ft_putstr(" block info\n");
       total += __show_alloc_mem(arena->large_page);
     }
+    pthread_mutex_unlock(&arena->lock);
   }
   ft_putstr("Total : ");
   ft_putnbr(total);
