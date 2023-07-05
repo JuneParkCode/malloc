@@ -14,13 +14,14 @@ extern __thread t_tcache __tcache;
  * to abort() if (!IS_ALLOCATED(meta_data->header)
  */
 void free(void *ptr) {
+  if (ptr == NULL)
+    return;
+
   void *const block = ptr - sizeof(size_t);
   t_metadata *const meta_data = (t_metadata *)block;
   t_tcache *const cache = &__tcache;
   t_arena *const arena = __get_arena(cache);
 
-  if (ptr == 0)
-    return;
   pthread_mutex_lock(&arena->lock);
   if (IS_TINY_BLOCK(meta_data->header)) {
     __free_tiny_block(arena, cache, block);

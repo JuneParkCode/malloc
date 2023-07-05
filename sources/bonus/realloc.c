@@ -19,7 +19,10 @@
  * fails or free(ptr) was called with size equal to zero.
  */
 void *realloc(void *ptr, size_t size) {
-  t_metadata *const meta_data = ptr - sizeof(size_t);
+  if (ptr == NULL)
+    return (malloc(size));
+
+  t_metadata *meta_data = ptr - sizeof(size_t);
   const size_t current_block_size = GET_BLOCK_SIZE(meta_data->header);
   const size_t request_block_size = __get_request_block_size(size);
   const size_t min_size = current_block_size < request_block_size
@@ -27,8 +30,6 @@ void *realloc(void *ptr, size_t size) {
                               : request_block_size;
   void *ret;
 
-  if (ptr == NULL)
-    return (malloc(size));
   if (size == 0) {
     free(ptr);
     return (NULL);
