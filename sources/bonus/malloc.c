@@ -1,10 +1,12 @@
 #include "malloc_bonus.h"
 #include "malloc_util_bonus.h"
+#include <stdatomic.h>
+#include <threads.h>
 
 t_arena g_arenas[MAX_ARENA_NUMBER] = {
     [0 ... MAX_ARENA_NUMBER - 1] = {.lock = PTHREAD_MUTEX_INITIALIZER}};
-_Atomic int __thread_count = -1;
-__thread t_tcache __tcache = {-1, NULL, NULL};
+atomic_int __thread_count = -1;
+thread_local t_tcache __tcache = {-1, NULL, NULL};
 
 void *malloc(unsigned long size) __attribute__((visibility("default")));
 
