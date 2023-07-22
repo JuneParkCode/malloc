@@ -2,8 +2,8 @@
 #define TEST_BONUS_Hs
 
 typedef struct s_arg {
-  int count;
-  int fd;
+	int count;
+	int fd;
 } t_arg;
 
 void *test_tiny_size(void *arg);

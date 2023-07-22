@@ -19,27 +19,28 @@ void *realloc(void *ptr, size_t size) __attribute__((visibility("default")));
  * @return a pointer to the newly allocated memory, or NULL if the request
  * fails or free(ptr) was called with size equal to zero.
  */
-void *realloc(void *ptr, size_t size) {
-  t_metadata *const meta_data = ptr - sizeof(size_t);
-  const size_t current_block_size = GET_BLOCK_SIZE(meta_data->header);
-  const size_t request_block_size = __get_request_block_size(size);
-  const size_t min_size = current_block_size < request_block_size
-                              ? current_block_size
-                              : request_block_size;
-  void *ret;
+void *realloc(void *ptr, size_t size)
+{
+	t_metadata *const meta_data = ptr - sizeof(size_t);
+	const size_t current_block_size = GET_BLOCK_SIZE(meta_data->header);
+	const size_t request_block_size = __get_request_block_size(size);
+	const size_t min_size = current_block_size < request_block_size
+								? current_block_size
+								: request_block_size;
+	void *ret;
 
-  if (ptr == NULL)
-    return (malloc(size));
-  if (size == 0) {
-    free(ptr);
-    return (NULL);
-  }
-  if (request_block_size == current_block_size) {
-    ret = ptr;
-  } else {
-    ret = malloc(size);
-    ft_memcpy(ret, ptr, min_size);
-    free(ptr);
-  }
-  return (ret);
+	if (ptr == NULL)
+		return (malloc(size));
+	if (size == 0) {
+		free(ptr);
+		return (NULL);
+	}
+	if (request_block_size == current_block_size) {
+		ret = ptr;
+	} else {
+		ret = malloc(size);
+		ft_memcpy(ret, ptr, min_size);
+		free(ptr);
+	}
+	return (ret);
 }

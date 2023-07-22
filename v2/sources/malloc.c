@@ -10,4 +10,7 @@ void *malloc(unsigned long size) __attribute__((visibility("default")));
  * @param size size
  * @return a pointer to the newly allocated memory, or NULL if failed
  */
-void *malloc(unsigned long size) { return ((void *)(size)); }
+void *malloc(unsigned long size)
+{
+	return ((void *)(size));
+}
