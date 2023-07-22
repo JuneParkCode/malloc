@@ -2,6 +2,7 @@
 BasedOnStyle: LLVM
 AllowShortFunctionsOnASingleLine: None
 BreakBeforeBraces: Linux
+IndentPPDirectives: BeforeHash
 IndentWidth: '4'
 TabWidth: '4'
 UseTab: Always
