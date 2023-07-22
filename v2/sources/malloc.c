@@ -1,8 +1,4 @@
 #include "malloc.h"
-#include "malloc_util.h"
-#include <stdio.h>
-
-void *malloc(unsigned long size) __attribute__((visibility("default")));
 
 /**
  * @fn malloc
