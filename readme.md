@@ -14,7 +14,7 @@ export LD_PRELOAD="${dynamic libfile name}"
 ```
 
 
-# 고려사항
+# 고려사항 (v2에서 개발할 내용)
 ## Warm Cache
 - Cache (Pool) 이 프로그램 시작 전에 미리 준비되지 않을 경우 첫 malloc() 호출에서 상대적으로 느려질 수 있음.
 - `__attribute__((contructor))` 를 통해서 cache 에 대한 initialization 이 가능함.
