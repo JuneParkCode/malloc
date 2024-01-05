@@ -1,6 +1,6 @@
 # DEFAULT COMPILE OPTIONS
 CC = cc
-CFLAGS = -Wall -Wextra -Werror
+CFLAGS = -Wall -Wextra -Werror -g3 -O0
 
 # ABOUT LIBRARY
 ifeq ($(HOSTTYPE),)
@@ -8,18 +8,21 @@ ifeq ($(HOSTTYPE),)
 endif
 
 LIB_NAME = ft_malloc_$(HOSTTYPE)
-NAME = lib$(LIB_NAME).so
+NAME = lib$(LIB_NAME).a #so
 
 # SOURCES
 SOURCE_DIR		= sources
-TEST_DIR		= sources/test
+TEST_DIR		= test
+INC_DIR			= includes
+INC_FLAG		= -I $(INC_DIR)
 
 SRCS			= $(SOURCE_DIR)/malloc.c \
 						$(SOURCE_DIR)/free.c \
 						$(SOURCE_DIR)/realloc.c \
 						$(SOURCE_DIR)/show_alloc_mem.c \
-						$(SOURCE_DIR)/arena.c \
-						$(SOURCE_DIR)/block.c \
+						$(SOURCE_DIR)/pmalloc.c \
+						$(SOURCE_DIR)/debug.c \
+						$(SOURCE_DIR)/pool_util.c \
 						$(SOURCE_DIR)/pool.c \
 						$(SOURCE_DIR)/ft_memcpy.c \
 						$(SOURCE_DIR)/ft_print.c \
@@ -39,15 +42,20 @@ TEST_FILE_NAME	= test_malloc
 
 # GENERATE OBJECT FILES
 %.o		: %.c
-		$(CC) $(CFLAGS) $(INC_FLAG) -c $< -o $@ 
+		$(CC) $(CFLAGS) $(INC_FLAG) -c $< -o $@
+#		$(CC) $(CFLAGS) $(INC_FLAG) -c $< -o $@ -fIC
+
 
 # MAKE all
 all		: $(NAME)
 
 # MAKE LIB
-$(NAME)	: $(OBJ)
-	$(CC) -shared $(CFLAGS) $(OBJ) -o $(NAME)
-#	 strip --strip-all --discard-all $(NAME)
+$(NAME)	: $(OBJECTS)
+		ar rcs $(NAME) $(OBJECTS)
+# 		$(CC) -o $(NAME) -shared $(CFLAGS) $(OBJECTS)
+#  		strip --strip-all --discard-all $(NAME)
+
+
 
 # MAKE CLEAN
 clean	: 
@@ -62,10 +70,11 @@ fclean	:
 re		:
 	@make fclean
 	@make all
-
+	
 test_build : 
 	$(CC) $(CFLAGS) $(TEST_SRCS) -o $(TEST_FILE_NAME) -L. -l$(LIB_NAME) $(INC_FLAG)
+
 # MAKE TEST
-test	:
+test_malloc	: fclean
 	@make all
 	@make test_build
