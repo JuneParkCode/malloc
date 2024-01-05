@@ -15,14 +15,15 @@
 #define PAGE_SIZE (getpagesize())
 
 // bucket order max
-#define MAX_ORDER 7
+#define MAX_ORDER_TINY 6
+#define MAX_ORDER_SMALL 5
 // 42 subject requirement
 #define LEAST_SIZE 128
 
 // size definition
 // tiny size definitions
 #define MALLOC_TINY_SIZE_MIN (sizeof(size_t))
-#define MALLOC_TINY_SIZE_MAX (MALLOC_TINY_SIZE_MIN << (MAX_ORDER - 1))
+#define MALLOC_TINY_SIZE_MAX (MALLOC_TINY_SIZE_MIN << (MAX_ORDER_TINY - 1))
 #define MALLOC_TINY_POOL_SIZE (MALLOC_TINY_SIZE_MAX * LEAST_SIZE) // 32 kb
 #define MALLOC_TINY_METADATA_SIZE                                              \
 	(MALLOC_TINY_POOL_SIZE / MALLOC_TINY_SIZE_MIN) // 4 kb ( 1 page )
@@ -33,7 +34,7 @@
 
 #define MALLOC_SMALL_SIZE_MIN (MALLOC_TINY_SIZE_MAX << 1)
 #define MALLOC_SMALL_SIZE_MAX                                                  \
-	(MALLOC_SMALL_SIZE_MIN << (MAX_ORDER - 1))						// 4 page
+	(MALLOC_SMALL_SIZE_MIN << (MAX_ORDER_SMALL - 1))				// 4 page
 #define MALLOC_SMALL_POOL_SIZE (MALLOC_SMALL_SIZE_MAX * LEAST_SIZE) // 128 page
 #define MALLOC_SMALL_METADATA_SIZE                                             \
 	(MALLOC_SMALL_POOL_SIZE / MALLOC_SMALL_SIZE_MIN) // 4 kb ( 1 page )
@@ -67,7 +68,7 @@ typedef struct s_pmalloc_space {
 	struct s_pmalloc_space *next;
 	t_block *free_list;
 	size_t size;
-	uint64_t padding[MAX_ORDER + 4]; // PADDING, to allign memory.
+	uint64_t padding[MAX_ORDER_TINY + 4]; // PADDING, to allign memory.
 } t_pmalloc_space;
 
 // pool sturcture
@@ -75,7 +76,7 @@ typedef struct s_pool {
 	void *addr;			  // pool addr
 	t_metadata *metadata; // information data space address in pool
 	struct s_pool *next;  // next node
-	t_block *free_list[MAX_ORDER];
+	t_block *free_list[MAX_ORDER_TINY];
 	POOL_TYPE type;
 	size_t size;		   // pool size (user space + metadata)
 	size_t allocated_size; // actually allocated size in pool

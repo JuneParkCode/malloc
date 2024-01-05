@@ -2,6 +2,26 @@
 #include "malloc_pool.h"
 #include "malloc_util.h"
 
+static size_t get_allocation_size(t_mmanager const *manager)
+{
+	size_t ret = 0;
+	t_pool const *const pools[] = {manager->tiny_pool_head,
+								   manager->small_pool_head,
+								   manager->large_pool_head};
+	t_pool const *head;
+	t_pool const *pool;
+
+	for (int i = 0; i < 3; ++i) {
+		head = pools[i];
+		pool = head;
+		while (pool) {
+			ret += pool->allocated_size;
+			pool = pool->next;
+		}
+	}
+	return ret;
+}
+
 // print all allocations
 void print_allocations(t_mmanager const *manager)
 {
@@ -25,6 +45,9 @@ void print_allocations(t_mmanager const *manager)
 		print_large_zone(pool);
 		pool = pool->next;
 	}
+	ft_putstr("total : ");
+	ft_putnbr(get_allocation_size(manager));
+	ft_putstr(" byte\n");
 	ft_putstr("===== DONE =====\n");
 }
 

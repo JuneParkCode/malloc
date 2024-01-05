@@ -2,6 +2,7 @@
 #include "malloc_debug.h"
 #include "malloc_pool.h"
 #include "malloc_util.h"
+#include <stdlib.h>
 
 extern pthread_mutex_t g_mutex;
 /**
@@ -45,7 +46,7 @@ void free(void *ptr)
 	if (pool->allocated_size == 0)
 		shrink_pool(pool, &g_manager);
 #ifdef DEBUG
-	ft_putstr("free size : ");
+	ft_putstr("block size : ");
 	ft_putnbr(block_size);
 	ft_putchar('\n');
 	print_allocations(&g_manager);

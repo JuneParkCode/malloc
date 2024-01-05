@@ -8,7 +8,7 @@ ifeq ($(HOSTTYPE),)
 endif
 
 LIB_NAME = ft_malloc_$(HOSTTYPE)
-NAME = lib$(LIB_NAME).a #so
+NAME = lib$(LIB_NAME).a
 
 # SOURCES
 SOURCE_DIR		= sources
@@ -42,9 +42,7 @@ TEST_FILE_NAME	= test_malloc
 
 # GENERATE OBJECT FILES
 %.o		: %.c
-		$(CC) $(CFLAGS) $(INC_FLAG) -c $< -o $@
-#		$(CC) $(CFLAGS) $(INC_FLAG) -c $< -o $@ -fIC
-
+		$(CC) $(CFLAGS) $(INC_FLAG) -c $< -o $@ -fPIC
 
 # MAKE all
 all		: $(NAME)
@@ -52,9 +50,8 @@ all		: $(NAME)
 # MAKE LIB
 $(NAME)	: $(OBJECTS)
 		ar rcs $(NAME) $(OBJECTS)
-# 		$(CC) -o $(NAME) -shared $(CFLAGS) $(OBJECTS)
-#  		strip --strip-all --discard-all $(NAME)
-
+#		$(CC) -o $(NAME) -shared $(CFLAGS) $(OBJECTS)
+#		strip --strip-all --discard-all $(NAME)
 
 
 # MAKE CLEAN

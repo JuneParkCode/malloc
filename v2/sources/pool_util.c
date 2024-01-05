@@ -141,12 +141,12 @@ void set_block_metadata(bool is_allocated, size_t size, t_pool *const pool,
  */
 bool is_block_pool(t_block const *const block, t_pool const *const pool)
 {
-	BYTE *start;
-	BYTE *end;
+	uintptr_t start;
+	uintptr_t end;
 
-	start = pool->addr;
-	end = add_addr(pool->addr, pool->size);
-	return (start <= (BYTE *)block && (BYTE *)block <= end);
+	start = (uintptr_t)pool->addr;
+	end = (uintptr_t)pool->metadata;
+	return (start <= (uintptr_t)block && (uintptr_t)block < end);
 }
 
 /**
@@ -160,10 +160,9 @@ t_pool *find_block_pool(t_block const *const block,
 						t_mmanager const *const manager)
 {
 	// small block more often freed.
-	t_pool *pools[3] = {manager->tiny_pool_head, manager->small_pool_head,
-						manager->large_pool_head};
+	t_pool *pools[2] = {manager->tiny_pool_head, manager->small_pool_head};
 	t_pool *pool;
-	for (int i = 0; i < 3; ++i) {
+	for (int i = 0; i < 2; ++i) {
 		pool = pools[i];
 
 		while (pool) {
@@ -171,6 +170,14 @@ t_pool *find_block_pool(t_block const *const block,
 				return pool;
 			pool = pool->next;
 		}
+	}
+	// large block have to compare with addr
+	pool = manager->large_pool_head;
+	while (pool) {
+		if ((t_pool *)block == pool->addr) {
+			return pool;
+		}
+		pool = pool->next;
 	}
 	return NULL;
 }

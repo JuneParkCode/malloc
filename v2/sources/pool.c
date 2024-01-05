@@ -134,8 +134,9 @@ t_pool *create_buddy_pool(t_mmanager *const manager, POOL_TYPE type)
 
 	// initialize pool block data
 	t_metadata *const metadata_block = (t_metadata *)add_addr(addr, pool_size);
+	size_t const MAX_ORDER = type == TINY ? MAX_ORDER_TINY : MAX_ORDER_SMALL;
 
-	for (int i = 0; i < MAX_ORDER; ++i) {
+	for (int i = 0; i < (int)MAX_ORDER; ++i) {
 		pool->free_list[i] = NULL;
 	}
 	pool->addr = addr;
@@ -204,7 +205,7 @@ t_pool *create_large_pool(size_t size, t_mmanager *const manager)
 	pool_data->type = LARGE;
 	pool_data->allocated_size = allocation_size;
 	pool_data->max_size = allocation_size;
-	append_pool(pool_data, manager);
+	pool_data->next = NULL;
 	return pool_data;
 }
 
@@ -232,7 +233,7 @@ void shrink_pool(t_pool *const pool, t_mmanager *const manager)
 			++free_pool_count;
 		node = node->next;
 	}
-	if (free_pool_count > 2)
+	if (free_pool_count >= 2)
 		remove_pool(pool, manager);
 }
 
@@ -324,6 +325,8 @@ void split_block(t_pool *const pool, size_t order)
  */
 void *get_block_from_pool(t_pool *const pool, size_t request_size)
 {
+	size_t const MAX_ORDER =
+		pool->type == TINY ? MAX_ORDER_TINY : MAX_ORDER_SMALL;
 	size_t const order = get_order(request_size, pool->type);
 	size_t current_order = order;
 	t_block *free_block;
@@ -396,6 +399,8 @@ void merge_block(t_block *const block, t_pool *const pool)
 	size_t const position =
 		((size_t)add_addr(block, -(uintptr_t)pool->addr)) % bucket_size;
 	size_t const order = get_block_order(*metadata);
+	size_t const MAX_ORDER =
+		pool->type == TINY ? MAX_ORDER_TINY : MAX_ORDER_SMALL;
 	t_block *left_block;
 	t_block *right_block;
 	size_t target_block_size;
