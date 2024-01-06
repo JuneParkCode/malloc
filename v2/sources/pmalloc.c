@@ -15,7 +15,7 @@ static void init_pmalloc_free_list(t_pmalloc_space *const space)
 
 	while (1) {
 		block->next = (t_block *)add_addr(block, sizeof(t_pool));
-		if (block->next >= end) {
+		if ((t_block *)add_addr(block->next, sizeof(t_pool)) >= end) {
 			block->next = NULL;
 			return;
 		}
