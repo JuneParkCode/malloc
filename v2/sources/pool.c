@@ -1,7 +1,6 @@
 #include "malloc_debug.h"
 #include "malloc_pool.h"
-#include "malloc_util.h"
-#include <stdlib.h>
+
 /**
  * @brief allocate block from buddy pool
  *
@@ -34,9 +33,6 @@ void *allocate_buddy_block(size_t size, t_mmanager *const manager,
 
 	while (pool != NULL) {
 		if ((ret = get_block_from_pool(pool, request_size))) {
-#ifdef DEBUG
-			print_allocation_info(size, ret, pool);
-#endif
 			return ret;
 		}
 		pool = pool->next;
@@ -48,9 +44,6 @@ void *allocate_buddy_block(size_t size, t_mmanager *const manager,
 
 	append_pool(new_pool, manager);
 	ret = get_block_from_pool(new_pool, request_size);
-#ifdef DEBUG
-	print_allocation_info(size, ret, new_pool);
-#endif
 	return ret;
 }
 
@@ -259,10 +252,6 @@ void append_pool(t_pool *const pool, t_mmanager *const manager)
 		manager->large_pool_head = pool;
 		break;
 	}
-#ifdef DEBUG
-	ft_putstr("append pool\n");
-	print_pools(&g_manager);
-#endif
 }
 
 /**
@@ -424,26 +413,11 @@ void merge_block(t_block *const block, t_pool *const pool)
 			target_block_size != block_size)
 			return;
 	}
-#ifdef DEBUG
-	ft_putstr("MERGE BEFORE\n");
-	print_pool_info(pool);
-	print_pool_blocks_infos(pool);
-	ft_putstr("left : ");
-	ft_putaddr(left_block);
-	ft_putstr("right : ");
-	ft_putaddr(right_block);
-	ft_putstr("\n");
-#endif
 	remove_block_from_pool(left_block, pool, order);
 	remove_block_from_pool(right_block, pool, order);
 	set_block_metadata(false, block_size << 1, pool, left_block);
 	set_block_metadata(false, block_size << 1, pool, right_block);
 	append_block(left_block, pool, order + 1);
-#ifdef DEBUG
-	ft_putstr("MERGE AFTER\n");
-	print_pool_info(pool);
-	print_pool_blocks_infos(pool);
-#endif
 	merge_block(left_block, pool);
 }
 

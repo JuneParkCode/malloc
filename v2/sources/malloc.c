@@ -1,7 +1,5 @@
 #include "malloc.h"
-#include "malloc_debug.h"
 #include "malloc_pool.h"
-#include "malloc_util.h"
 
 static void memory_construct(void) __CONSTRUCTOR__;
 static void memory_destruct(void) __DESTRUCTOR__;
@@ -21,10 +19,8 @@ void *malloc(unsigned long size)
 {
 	const POOL_TYPE type = GET_SIZE_TYPE(size);
 	void *ret = NULL;
-	// allocate memory by size
-#ifdef DEBUG
-	ft_putstr("malloc called\n");
-#endif
+
+	pthread_mutex_lock(&g_mutex);
 	switch (type) {
 	case TINY:
 		ret = allocate_tiny_block(size, &g_manager);
@@ -36,10 +32,7 @@ void *malloc(unsigned long size)
 		ret = allocate_large_block(size, &g_manager);
 		break;
 	}
-#ifdef DEBUG
-	ft_putstr("CALL MALLOC : ALLOCATION STATUS\n");
-	print_allocations(&g_manager);
-#endif
+	pthread_mutex_unlock(&g_mutex);
 	return ret;
 }
 
@@ -60,10 +53,6 @@ void memory_construct(void)
 	g_manager.small_pool_head = create_small_pool(&g_manager);
 	// pthrea mutex
 	pthread_mutex_init(&g_mutex, NULL);
-#ifdef DEBUG
-	ft_putstr("construct done\n");
-	print_allocations(&g_manager);
-#endif
 }
 
 /**
@@ -78,6 +67,7 @@ void memory_destruct(void)
 	desturct_pool(g_manager.large_pool_head);
 	// destory all ptr spaces
 	desturct_space(g_manager.pmalloc_space);
+	pthread_mutex_destroy(&g_mutex);
 }
 
 /**

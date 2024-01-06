@@ -2,13 +2,22 @@
 #include "malloc_pool.h"
 #include "malloc_util.h"
 
+extern pthread_mutex_t g_mutex;
+
 void *realloc(void *ptr, size_t size)
 {
+	void *ret;
+
 	// edge case
-	if (ptr == NULL)
-		return (malloc(size));
+	pthread_mutex_lock(&g_mutex);
+	if (ptr == NULL) {
+		ret = malloc(size);
+		pthread_mutex_unlock(&g_mutex);
+		return ret;
+	}
 	if (size == 0) {
 		free(ptr);
+		pthread_mutex_unlock(&g_mutex);
 		return (NULL);
 	}
 	// operations
@@ -17,7 +26,6 @@ void *realloc(void *ptr, size_t size)
 	t_metadata *metadata;
 	size_t current_block_size;
 	size_t request_block_size;
-	void *ret;
 
 	switch (type) {
 	case TINY:
@@ -49,5 +57,6 @@ void *realloc(void *ptr, size_t size)
 		ft_memcpy(ret, ptr, min_size);
 		free(ptr);
 	}
+	pthread_mutex_unlock(&g_mutex);
 	return (ret);
 }

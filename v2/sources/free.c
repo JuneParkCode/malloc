@@ -1,8 +1,5 @@
 #include "malloc.h"
-#include "malloc_debug.h"
 #include "malloc_pool.h"
-#include "malloc_util.h"
-#include <stdlib.h>
 
 extern pthread_mutex_t g_mutex;
 /**
@@ -12,14 +9,10 @@ extern pthread_mutex_t g_mutex;
  */
 void free(void *ptr)
 {
-#ifdef DEBUG
-	ft_putstr("free called\n");
-	ft_putstr("addr : ");
-	ft_putaddr(ptr);
-	ft_putchar('\n');
-#endif
 	if (ptr == NULL)
 		return; // abort();
+
+	pthread_mutex_lock(&g_mutex);
 	t_block *block = ptr;
 	t_pool *pool = find_block_pool(ptr, &g_manager);
 
@@ -27,9 +20,7 @@ void free(void *ptr)
 		return; // abort();
 	if (pool->type == LARGE) {
 		remove_pool(pool, &g_manager);
-#ifdef DEBUG
-		print_allocations(&g_manager);
-#endif
+		pthread_mutex_unlock(&g_mutex);
 		return;
 	}
 	// buddy allocation case
@@ -45,10 +36,5 @@ void free(void *ptr)
 	// shrink process
 	if (pool->allocated_size == 0)
 		shrink_pool(pool, &g_manager);
-#ifdef DEBUG
-	ft_putstr("block size : ");
-	ft_putnbr(block_size);
-	ft_putchar('\n');
-	print_allocations(&g_manager);
-#endif
+	pthread_mutex_unlock(&g_mutex);
 }
