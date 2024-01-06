@@ -8,7 +8,7 @@ ifeq ($(HOSTTYPE),)
 endif
 
 LIB_NAME = ft_malloc_$(HOSTTYPE)
-NAME = lib$(LIB_NAME).a
+NAME = lib$(LIB_NAME).so
 
 # SOURCES
 SOURCE_DIR		= sources
@@ -49,9 +49,10 @@ all		: $(NAME)
 
 # MAKE LIB
 $(NAME)	: $(OBJECTS)
-		ar rcs $(NAME) $(OBJECTS)
-#		$(CC) -o $(NAME) -shared $(CFLAGS) $(OBJECTS)
+		$(CC) -o $(NAME) -shared $(CFLAGS) $(OBJECTS)
+		strip -x $(NAME)
 #		strip --strip-all --discard-all $(NAME)
+#		ar rcs $(NAME) $(OBJECTS)
 
 
 # MAKE CLEAN

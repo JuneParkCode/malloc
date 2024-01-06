@@ -1,4 +1,5 @@
-// #include <stdlib.h>
+#include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 
 void print(char *s)
@@ -12,7 +13,6 @@ int main(void)
 	char *addr;
 
 	i = 0;
-	show_alloc_mem();
 	while (i < 1024) {
 		addr = (char *)malloc(1024);
 		if (addr == NULL) {
@@ -22,6 +22,5 @@ int main(void)
 		addr[0] = 42;
 		i++;
 	}
-	show_alloc_mem();
 	return (0);
 }
