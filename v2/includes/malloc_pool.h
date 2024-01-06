@@ -15,13 +15,14 @@
 #define PAGE_SIZE (getpagesize())
 
 // bucket order max
-#define MAX_ORDER_TINY 6
-#define MAX_ORDER_SMALL 5
+#define MAX_ORDER_TINY 6  // 8 ~ 256
+#define MAX_ORDER_SMALL 3 // 512 ~ 4096
 // 42 subject requirement
 #define LEAST_SIZE 128
 
 // size definition
 // tiny size definitions
+
 #define MALLOC_TINY_SIZE_MIN (sizeof(size_t))
 #define MALLOC_TINY_SIZE_MAX (MALLOC_TINY_SIZE_MIN << (MAX_ORDER_TINY - 1))
 #define MALLOC_TINY_POOL_SIZE (MALLOC_TINY_SIZE_MAX * LEAST_SIZE) // 32 kb
@@ -32,23 +33,27 @@
 
 // small size definitions
 
-#define MALLOC_SMALL_SIZE_MIN (MALLOC_TINY_SIZE_MAX << 1)
+#define MALLOC_SMALL_SIZE_MIN (MALLOC_TINY_SIZE_MAX << 1) // 512 byte
 #define MALLOC_SMALL_SIZE_MAX                                                  \
-	(MALLOC_SMALL_SIZE_MIN << (MAX_ORDER_SMALL - 1))				// 4 page
-#define MALLOC_SMALL_POOL_SIZE (MALLOC_SMALL_SIZE_MAX * LEAST_SIZE) // 128 page
+	(MALLOC_SMALL_SIZE_MIN << (MAX_ORDER_SMALL - 1)) // 2048 byte
+#define MALLOC_SMALL_POOL_SIZE (MALLOC_SMALL_SIZE_MAX * LEAST_SIZE) // 256 kb
 #define MALLOC_SMALL_METADATA_SIZE                                             \
-	(MALLOC_SMALL_POOL_SIZE / MALLOC_SMALL_SIZE_MIN) // 4 kb ( 1 page )
+	(MALLOC_SMALL_POOL_SIZE / MALLOC_SMALL_SIZE_MIN) // 0.5 kb ( 0.25 page )
 #define MALLOC_SMALL_ALLOC_SIZE                                                \
 	(MALLOC_SMALL_POOL_SIZE + MALLOC_SMALL_METADATA_SIZE)
 
 // GET SIZE TYPE, TINY, SMALL, LARGE
+
+#define PMALLOC_POOL_SIZE (PAGE_SIZE * 4)
+// minumum page usage..
+// [ 4 KB ALIGNED]
+// (PMALLOC_POOL_SIZE + MALLOC_TINY_POOL_SIZE + MALLOC_SMALL_POOL_SIZE) / PAGE_SIZE
 
 #define GET_SIZE_TYPE(size)                                                    \
 	((size) <= MALLOC_TINY_SIZE_MAX                                            \
 		 ? (TINY)                                                              \
 		 : ((size) <= MALLOC_SMALL_SIZE_MAX ? (SMALL) : (LARGE)))
 
-#define PMALLOC_POOL_SIZE (PAGE_SIZE * 4)
 
 void *add_addr(void const *addr, ssize_t size) __INTERNAL__;
 

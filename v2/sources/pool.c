@@ -110,12 +110,12 @@ t_pool *create_buddy_pool(t_mmanager *const manager, POOL_TYPE type)
 
 	switch (type) {
 	case TINY:
-		allocation_size = MALLOC_TINY_ALLOC_SIZE;
+		allocation_size = get_align_size(MALLOC_TINY_ALLOC_SIZE, PAGE_SIZE);
 		pool_size = MALLOC_TINY_POOL_SIZE;
 		block_max_size = MALLOC_TINY_SIZE_MAX;
 		break;
 	case SMALL:
-		allocation_size = MALLOC_SMALL_ALLOC_SIZE;
+		allocation_size = get_align_size(MALLOC_SMALL_ALLOC_SIZE, PAGE_SIZE);
 		pool_size = MALLOC_SMALL_POOL_SIZE;
 		block_max_size = MALLOC_SMALL_SIZE_MAX;
 		break;
