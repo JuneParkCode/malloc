@@ -133,8 +133,8 @@ static t_node *rebalance(t_node **node)
 	}
 	return *node;
 }
-
 // ######## BASIC OPERATION IN AVL ########
+
 /**
  * @brief insert node to avl tree.
  *
