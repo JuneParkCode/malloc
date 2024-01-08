@@ -78,16 +78,18 @@
         ```C
         // pool sturcture
         typedef struct s_pool {
-            struct s_pool *parent;	// parent node
-            struct s_pool *left;	// left node
-            struct s_pool *right;	// right node
-            size_t height;			// height of tree
-            void *addr;				// pool addr
-            t_metadata *metadata;	// information data space address in pool
-            POOL_TYPE type;			// type of pool
-            size_t size;			// pool size (user space + metadata)
-            size_t allocated_size;	// actually allocated size in pool
-            size_t user_space_size; // maximum allocation size
+            // pool address information
+            void *addr;			  // pool addr
+            t_metadata *metadata; // information data space address in pool
+            // tree node 
+            struct s_pool *parent;
+            struct s_pool *left;
+            struct s_pool *right;
+            // size informmation
+            size_t size;		   // pool size (user space + metadata)
+            size_t allocated_size; // mmap allocated size
+            size_t max_size;	   // maximum allocation size -> userspace_size
+            POOL_TYPE type;
         } t_pool;
         ```
     - `t_mmanger` struct 의 내부 요소

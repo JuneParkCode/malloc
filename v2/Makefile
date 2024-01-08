@@ -24,7 +24,6 @@ SRCS			= $(SOURCE_DIR)/malloc.c \
 						$(SOURCE_DIR)/debug.c \
 						$(SOURCE_DIR)/pool_util.c \
 						$(SOURCE_DIR)/pool.c \
-						$(SOURCE_DIR)/avl_tree.c \
 						$(SOURCE_DIR)/ft_memcpy.c \
 						$(SOURCE_DIR)/ft_print.c \
 						$(SOURCE_DIR)/ft_putaddr.c \
@@ -37,10 +36,6 @@ OBJECTS			= ${SRCS:.c=.o}
 TEST_SRCS		= $(TEST_DIR)/main.c \
 					$(TEST_DIR)/test_malloc.c
 TEST_OBJS		= ${TEST_SRCS:.c=.o}
-
-AVL_TEST_SRCS	= 	$(SOURCE_DIR)/avl.c \
-					$(TEST_DIR)/avl_test.c \
-					$(TEST_DIR)/util.c
 
 # ABOUT TEST
 TEST_FILE_NAME	= test_malloc
@@ -81,11 +76,3 @@ test_build :
 test_malloc	: fclean
 	@make all
 	@make test_build
-
-# TEST AVL
-avl :
-	rm -f avl_test
-	$(CC) $(AVL_TEST_SRCS) $(INC_FLAG) -o avl_test -g3 -D DEBUG
-
-avl_fclean:
-	rm -f avl_test
