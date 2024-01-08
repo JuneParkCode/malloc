@@ -104,8 +104,8 @@
         // ptr space
         typedef struct s_pool_space {
             t_pool *head;
-            t_block *tiny_free_list[MAX_TINY_ORDER];
-            t_block *small_free_list[MAX_SMALL_ORDER];
+            t_block *tiny_free_list[MAX_ORDER_TINY];
+            t_block *small_free_list[MAX_ORDER_SMALL];
             bool tiny_has_free_pool;
             bool small_has_free_pool;
             t_pmalloc_space *pmalloc_space;

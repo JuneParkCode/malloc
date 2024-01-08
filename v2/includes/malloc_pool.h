@@ -35,7 +35,7 @@
 
 #define MALLOC_SMALL_SIZE_MIN (MALLOC_TINY_SIZE_MAX << 1) // 512 byte
 #define MALLOC_SMALL_SIZE_MAX                                                  \
-	(MALLOC_SMALL_SIZE_MIN << (MAX_ORDER_SMALL - 1)) // 2048 byte
+	(MALLOC_SMALL_SIZE_MIN << (MAX_ORDER_SMALL - 1))				// 2048 byte
 #define MALLOC_SMALL_POOL_SIZE (MALLOC_SMALL_SIZE_MAX * LEAST_SIZE) // 256 kb
 #define MALLOC_SMALL_METADATA_SIZE                                             \
 	(MALLOC_SMALL_POOL_SIZE / MALLOC_SMALL_SIZE_MIN) // 0.5 kb ( 0.25 page )
@@ -47,13 +47,13 @@
 #define PMALLOC_POOL_SIZE (PAGE_SIZE * 4)
 // minumum page usage..
 // [ 4 KB ALIGNED]
-// (PMALLOC_POOL_SIZE + MALLOC_TINY_POOL_SIZE + MALLOC_SMALL_POOL_SIZE) / PAGE_SIZE
+// (PMALLOC_POOL_SIZE + MALLOC_TINY_POOL_SIZE + MALLOC_SMALL_POOL_SIZE) /
+// PAGE_SIZE
 
 #define GET_SIZE_TYPE(size)                                                    \
 	((size) <= MALLOC_TINY_SIZE_MAX                                            \
 		 ? (TINY)                                                              \
 		 : ((size) <= MALLOC_SMALL_SIZE_MAX ? (SMALL) : (LARGE)))
-
 
 void *add_addr(void const *addr, ssize_t size) __INTERNAL__;
 
@@ -73,26 +73,29 @@ typedef struct s_pmalloc_space {
 	struct s_pmalloc_space *next;
 	t_block *free_list;
 	size_t size;
-	uint64_t padding[MAX_ORDER_TINY + 4]; // PADDING, to allign memory.
 } t_pmalloc_space;
 
 // pool sturcture
 typedef struct s_pool {
-	void *addr;			  // pool addr
-	t_metadata *metadata; // information data space address in pool
-	struct s_pool *next;  // next node
-	t_block *free_list[MAX_ORDER_TINY];
-	POOL_TYPE type;
-	size_t size;		   // pool size (user space + metadata)
-	size_t allocated_size; // actually allocated size in pool
-	size_t max_size;	   // maximum allocation size
+	struct s_pool *parent;	// parent node
+	struct s_pool *left;	// left node
+	struct s_pool *right;	// right node
+	size_t height;			// height of tree
+	void *addr;				// pool addr
+	t_metadata *metadata;	// information data space address in pool
+	POOL_TYPE type;			// type of pool
+	size_t size;			// pool size (user space + metadata)
+	size_t allocated_size;	// actually allocated size in pool
+	size_t user_space_size; // maximum allocation size
 } t_pool;
 
 // ptr space
 typedef struct s_pool_space {
-	t_pool *tiny_pool_head;
-	t_pool *small_pool_head;
-	t_pool *large_pool_head;
+	t_pool *head;
+	t_block *tiny_free_list[MAX_ORDER_TINY];
+	t_block *small_free_list[MAX_ORDER_SMALL];
+	bool tiny_has_free_pool;
+	bool small_has_free_pool;
 	t_pmalloc_space *pmalloc_space;
 } t_mmanager;
 
