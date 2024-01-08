@@ -44,13 +44,12 @@ void check_size(t_node const *node)
 int main()
 {
 	int COUNT = 10;
-	t_node *head = create_node();
-	t_node *addrs[COUNT + 1];
+	t_node *head = NULL;
+	t_node *addrs[COUNT];
 
 	// test insertion
 	printf("\n========TEST insert_node()========\n\n");
-	addrs[0] = head;
-	for (int i = 1; i <= COUNT; ++i) {
+	for (int i = 0; i < COUNT; ++i) {
 		insert_node((addrs[i] = create_node()), &head);
 		printf("%p\n", addrs[i]);
 	}
@@ -58,7 +57,7 @@ int main()
 
 	printf("\n========TEST find_node()========\n\n");
 	// test find
-	for (int i = 0; i <= COUNT; ++i) {
+	for (int i = 0; i < COUNT; ++i) {
 		t_node *found = find_node((t_key_const)addrs[i], head);
 		if (found != addrs[i]) {
 			printf("Error on %p <-> %p\n", addrs[i], found);
@@ -72,7 +71,7 @@ int main()
 	iterate_tree(head, check_size);
 	// test removal
 	printf("\n========TEST remove_node()========\n\n");
-	for (int i = 0; i <= COUNT; ++i) {
+	for (int i = 0; i < COUNT; ++i) {
 		remove_node(addrs[i], &head);
 		printf("TREE head %p\n", head);
 		iterate_tree(head, show_node);
