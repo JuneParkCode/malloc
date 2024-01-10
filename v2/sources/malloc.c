@@ -80,8 +80,14 @@ void memory_destruct(void)
 
 static void free_pool(t_pool *pool)
 {
+	if (pool == NULL)
+		return;
+	t_pool *right = pool->right;
+
+	free_pool(pool->left);
 	munmap(pool->addr, pool->size);
 	pfree(pool);
+	free_pool(right);
 }
 
 /**
@@ -91,7 +97,7 @@ static void free_pool(t_pool *pool)
  */
 void desturct_pool(t_pool *const head)
 {
-	map_tree(head, free_pool);
+	free_pool(head);
 }
 
 /**
