@@ -1,7 +1,10 @@
 # HOW TO USE?
-`make` and create `run.sh` or `run_mac.sh` and `./run.sh ./executable`
+`make` and `./run.sh ./executable`
 ## run.sh
 - must replace `${dynamic libfile name}` to `libft_malloc_${HOST_TYPE}.so`
+
+## LLDB
+- SET ENV by `settings set target.env-vars`
 
 ## V2
 ### Pre allocation (Warm cache)
