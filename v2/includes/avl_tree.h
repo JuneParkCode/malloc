@@ -20,8 +20,8 @@ typedef t_pool const *t_key_const;
 
 // ######## BASIC OPERATION IN AVL ########
 
-void insert_node(t_node *node, t_node **head) __INTERNAL__;
-void remove_node(t_node *node, t_node **head) __INTERNAL__;
+void insert_node(t_node *node, t_node **root) __INTERNAL__;
+void remove_node(t_node *node, t_node **root) __INTERNAL__;
 
 // ######## BINARY TREE OPERATIONS ########
 

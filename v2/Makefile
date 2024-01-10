@@ -24,7 +24,7 @@ SRCS			= $(SOURCE_DIR)/malloc.c \
 						$(SOURCE_DIR)/debug.c \
 						$(SOURCE_DIR)/pool_util.c \
 						$(SOURCE_DIR)/pool.c \
-						$(SOURCE_DIR)/avl_tree.c \
+						$(SOURCE_DIR)/avl.c \
 						$(SOURCE_DIR)/ft_memcpy.c \
 						$(SOURCE_DIR)/ft_print.c \
 						$(SOURCE_DIR)/ft_putaddr.c \
@@ -39,6 +39,13 @@ TEST_SRCS		= $(TEST_DIR)/main.c \
 TEST_OBJS		= ${TEST_SRCS:.c=.o}
 
 AVL_TEST_SRCS	= 	$(SOURCE_DIR)/avl.c \
+					$(SOURCE_DIR)/ft_print.c \
+					$(SOURCE_DIR)/ft_putaddr.c \
+					$(SOURCE_DIR)/ft_putchar.c \
+					$(SOURCE_DIR)/ft_puthex.c \
+					$(SOURCE_DIR)/ft_putnbr.c \
+					$(SOURCE_DIR)/ft_putstr.c \
+					$(SOURCE_DIR)/ft_strlen.c \
 					$(TEST_DIR)/avl_test.c \
 					$(TEST_DIR)/util.c
 
@@ -55,7 +62,7 @@ all		: $(NAME)
 # MAKE LIB
 $(NAME)	: $(OBJECTS)
 		$(CC) -o $(NAME) -shared $(CFLAGS) $(OBJECTS)
-		strip -x $(NAME)
+#		strip -x $(NAME)
 #		strip --strip-all --discard-all $(NAME)
 #		ar rcs $(NAME) $(OBJECTS)
 
