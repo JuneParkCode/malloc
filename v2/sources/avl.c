@@ -127,11 +127,13 @@ static t_node *rebalance(t_node *node)
 	if (bf < -1) {							   // Right tree is heavy
 		if (balance_factor(node->right) > 0) { // RL -> Rotate Right first
 			node->right = rotate_right(node->right);
+			node->right->parent = node->right;
 		}
 		node = rotate_left(node);
 	} else if (bf > 1) {					  // Left tree is heavy
 		if (balance_factor(node->left) < 0) { // LR -> Rotate Left first
 			node->left = rotate_left(node->left);
+			node->left->parent = node->left;
 		}
 		node = rotate_right(node);
 	}
@@ -163,6 +165,12 @@ static t_node *_insert(t_node *const node, t_node *head)
 void insert_node(t_node *const node, t_node **root)
 {
 	*root = _insert(node, *root);
+	if ((*root)->left) {
+		(*root)->left->parent = *root;
+	}
+	if ((*root)->right) {
+		(*root)->right->parent = *root;
+	}
 }
 
 t_node *_remove(t_key_const key, t_node *const node)
@@ -173,10 +181,14 @@ t_node *_remove(t_key_const key, t_node *const node)
 
 	if (less(key, node)) {
 		node->left = _remove(key, node->left);
+		if (node->left)
+			node->left->parent = node;
 		update_height(node);
 		ret = rebalance(node);
 	} else if (greater(key, node)) {
 		node->right = _remove(key, node->right);
+		if (node->right)
+			node->right->parent = node;
 		update_height(node);
 		ret = rebalance(node);
 	} else {
@@ -233,6 +245,12 @@ t_node *_remove(t_key_const key, t_node *const node)
 void remove_node(t_node *const node, t_node **const root)
 {
 	*root = _remove(_key(node), *root);
+	if ((*root)->left) {
+		(*root)->left->parent = *root;
+	}
+	if ((*root)->right) {
+		(*root)->right->parent = *root;
+	}
 }
 
 // ######## BINARY TREE OPERATIONS ########
