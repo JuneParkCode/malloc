@@ -1,52 +1,29 @@
+#include "avl_tree.h"
 #include "malloc_debug.h"
 #include "malloc_pool.h"
 #include "malloc_util.h"
 
-static size_t get_allocation_size(t_mmanager const *manager)
-{
-	size_t ret = 0;
-	t_pool const *const pools[] = {manager->tiny_pool_head,
-								   manager->small_pool_head,
-								   manager->large_pool_head};
-	t_pool const *head;
-	t_pool const *pool;
-
-	for (int i = 0; i < 3; ++i) {
-		head = pools[i];
-		pool = head;
-		while (pool) {
-			ret += pool->allocated_size;
-			pool = pool->next;
-		}
-	}
-	return ret;
-}
-
 // print all allocations
 void print_allocations(t_mmanager const *manager)
 {
-	t_pool const *pool;
+	size_t allocation_size = 0;
+	t_pool const *node = manager->head;
 
-	// TINY
-	pool = manager->tiny_pool_head;
-	while (pool != NULL) {
-		print_buddy_zone(pool);
-		pool = pool->next;
+	while (node->left) {
+		node = node->left;
 	}
-	// SMALL
-	pool = manager->small_pool_head;
-	while (pool != NULL) {
-		print_buddy_zone(pool);
-		pool = pool->next;
-	}
-	// LARGE
-	pool = manager->large_pool_head;
-	while (pool != NULL) {
-		print_large_zone(pool);
-		pool = pool->next;
+
+	while (node) {
+		allocation_size += node->allocated_size;
+		if (node->type == LARGE) {
+			print_large_zone(node);
+		} else {
+			print_buddy_zone(node);
+		}
+		node = next_node(node);
 	}
 	ft_putstr("total : ");
-	ft_putnbr(get_allocation_size(manager));
+	ft_putnbr(allocation_size);
 	ft_putstr(" byte\n");
 	ft_putstr("===== DONE =====\n");
 }
@@ -99,15 +76,15 @@ void print_pool_info(t_pool const *pool)
 	ft_putstr(" byte\n");
 	// POOL_USER_SPACE_SIZE : 10240 byte
 	ft_putstr("POOL_USER_SPACE_SIZE : ");
-	ft_putnbr(pool->max_size);
+	ft_putnbr(pool->user_space_size);
 	ft_putstr(" byte\n");
 	// POOL_META_DATA_SIZE : 0 byte
 	ft_putstr("POOL_META_DATA_SIZE : ");
-	ft_putnbr(pool->size - pool->max_size);
+	ft_putnbr(pool->size - pool->user_space_size);
 	ft_putstr(" byte\n");
 	// POOL_USAGE : 100 % ( 10240 / 10240 )
 	ft_putstr("POOL_USAGE : ");
-	size_t p = ((float)pool->allocated_size / pool->max_size) * 10000;
+	size_t p = ((float)pool->allocated_size / pool->user_space_size) * 10000;
 	size_t n = p / 100;
 	size_t f = p % 100;
 	ft_putnbr(n);
@@ -116,13 +93,13 @@ void print_pool_info(t_pool const *pool)
 	ft_putstr(" \% ( ");
 	ft_putnbr(pool->allocated_size);
 	ft_putstr(" / ");
-	ft_putnbr(pool->max_size);
+	ft_putnbr(pool->user_space_size);
 	ft_putstr(" )\n");
 	// USER_SPACE_ADDR : 0x09ae1fa ~ 0x09af1fa
 	ft_putstr("USER_SPACE_ADDR : ");
 	ft_putaddr(pool->addr);
 	ft_putstr(" ~ ");
-	ft_putaddr(add_addr(pool->addr, pool->max_size));
+	ft_putaddr(add_addr(pool->addr, pool->user_space_size));
 	ft_putchar('\n');
 
 	if (pool->type != LARGE) {
@@ -130,7 +107,8 @@ void print_pool_info(t_pool const *pool)
 		ft_putstr("METADATA_ADDR : ");
 		ft_putaddr(pool->metadata);
 		ft_putstr(" ~ ");
-		ft_putaddr(add_addr(pool->metadata, (pool->size - pool->max_size)));
+		ft_putaddr(
+			add_addr(pool->metadata, (pool->size - pool->user_space_size)));
 		ft_putchar('\n');
 	}
 	ft_putstr("----------------------------------------\n");
@@ -139,36 +117,30 @@ void print_pool_info(t_pool const *pool)
 // print all pool informations
 void print_pools(t_mmanager const *manager)
 {
-	t_pool const *const pools[] = {manager->tiny_pool_head,
-								   manager->small_pool_head,
-								   manager->large_pool_head};
-	t_pool const *head;
-	t_pool const *pool;
-	for (int i = 0; i < 3; ++i) {
-		head = pools[i];
-		pool = head;
-		while (pool != NULL) {
-			print_pool_info(pool);
-			ft_putchar('\n');
-			pool = pool->next;
-		}
+	t_pool const *node = manager->head;
+
+	while (node) {
+		print_pool_info(node);
+		node = next_node(node);
 	}
 }
 
 // print all of pool block informations
 void print_pool_blocks_infos(t_pool const *pool)
 {
-	t_metadata const *const end_addr = add_addr(pool->addr, pool->size);
 	t_metadata const *metadata = pool->metadata;
 	size_t const min_size =
 		pool->type == TINY ? MALLOC_TINY_SIZE_MIN : MALLOC_SMALL_SIZE_MIN;
 	size_t block_size;
+	size_t sum = 0;
 
 	ft_putstr("----------------------------------------\n");
-	while (metadata < end_addr) {
-		print_metadata_info(metadata, pool);
+	while (sum < pool->user_space_size) {
+		if (is_allocated(*metadata))
+			print_metadata_info(metadata, pool);
 		block_size = get_block_size(*metadata, pool->type);
 		metadata = (t_metadata *)add_addr(metadata, block_size / min_size);
+		sum += block_size;
 	}
 	ft_putstr("----------------------------------------\n");
 }

@@ -1,3 +1,4 @@
+#include "avl_tree.h"
 #include "malloc_debug.h"
 #include "malloc_pool.h"
 
@@ -12,39 +13,33 @@
 void *allocate_buddy_block(size_t size, t_mmanager *const manager,
 						   POOL_TYPE type)
 {
-	size_t request_size;
-	t_pool *pool;
+	size_t order;
+	void *ret;
 
 	switch (type) {
 	case TINY:
-		request_size = MALLOC_TINY_SIZE_MIN << get_order(size, type);
-		pool = manager->tiny_pool_head;
+		order = get_order(size, type);
+		ret = get_block_from_list(manager, order, type);
+		if (ret)
+			return ret;
 		break;
 	case SMALL:
-		request_size = MALLOC_SMALL_SIZE_MIN << get_order(size, type);
-		pool = manager->small_pool_head;
+		order = get_order(size, type);
+		ret = get_block_from_list(manager, order, type);
+		if (ret)
+			return ret;
 		break;
 	case LARGE:
 		return NULL;
 	}
 
-	// operations
-	void *ret = NULL;
-
-	while (pool != NULL) {
-		if ((ret = get_block_from_pool(pool, request_size))) {
-			return ret;
-		}
-		pool = pool->next;
-	}
 	// when no space to allocate
 	t_pool *const new_pool = create_buddy_pool(manager, type);
 	if (new_pool == NULL)
 		return NULL;
 
 	append_pool(new_pool, manager);
-	ret = get_block_from_pool(new_pool, request_size);
-	return ret;
+	return get_block_from_list(manager, order, type);
 }
 
 /**
@@ -80,10 +75,10 @@ void *allocate_small_block(size_t size, t_mmanager *const manager)
  */
 void *allocate_large_block(size_t size, t_mmanager *const manager)
 {
-	t_pool *const allocated = create_large_pool(size, manager);
-	void *const ret = allocated->addr;
+	t_pool *const pool = create_large_pool(size, manager);
+	void *const ret = pool->addr;
 
-	append_pool(allocated, manager);
+	append_pool(pool, manager);
 	return ret;
 }
 
@@ -99,18 +94,18 @@ t_pool *create_buddy_pool(t_mmanager *const manager, POOL_TYPE type)
 {
 	size_t allocation_size;
 	size_t pool_size;
-	size_t block_max_size;
+	size_t max_order;
 
 	switch (type) {
 	case TINY:
 		allocation_size = get_align_size(MALLOC_TINY_ALLOC_SIZE, PAGE_SIZE);
 		pool_size = MALLOC_TINY_POOL_SIZE;
-		block_max_size = MALLOC_TINY_SIZE_MAX;
+		max_order = MAX_ORDER_TINY;
 		break;
 	case SMALL:
 		allocation_size = get_align_size(MALLOC_SMALL_ALLOC_SIZE, PAGE_SIZE);
 		pool_size = MALLOC_SMALL_POOL_SIZE;
-		block_max_size = MALLOC_SMALL_SIZE_MAX;
+		max_order = MAX_ORDER_SMALL;
 		break;
 	case LARGE:
 		return NULL;
@@ -127,29 +122,22 @@ t_pool *create_buddy_pool(t_mmanager *const manager, POOL_TYPE type)
 
 	// initialize pool block data
 	t_metadata *const metadata_block = (t_metadata *)add_addr(addr, pool_size);
-	size_t const MAX_ORDER = type == TINY ? MAX_ORDER_TINY : MAX_ORDER_SMALL;
 
-	for (int i = 0; i < (int)MAX_ORDER; ++i) {
-		pool->free_list[i] = NULL;
-	}
+	pool->parent = NULL;
+	pool->left = NULL;
+	pool->right = NULL;
+	pool->height = 1;
 	pool->addr = addr;
 	pool->metadata = metadata_block;
 	pool->size = allocation_size;
 	pool->allocated_size = 0;
-	pool->max_size = pool_size;
-	pool->free_list[MAX_ORDER - 1] = addr;
+	pool->user_space_size = pool_size;
 	pool->type = type;
 
 	// initialize pool block
 	t_block *block = pool->addr;
-	while ((void *)block < (void *)metadata_block) {
-		block->next = (t_block *)add_addr(block, block_max_size);
-		set_block_metadata(false, block_max_size, pool, block);
-		block = block->next;
-	}
-	// init last block
-	block = add_addr(metadata_block, -block_max_size);
-	block->next = NULL;
+	set_block_metadata(false, max_order - 1, pool, block);
+	append_block(block, manager, pool->type, max_order - 1);
 	return pool;
 }
 
@@ -188,69 +176,82 @@ t_pool *create_large_pool(size_t size, t_mmanager *const manager)
 {
 	// allocate pool
 	size_t const allocation_size = get_align_size(size, PAGE_SIZE);
-	t_pool *const pool_data = pmalloc(manager->pmalloc_space);
+	t_pool *const pool = pmalloc(manager->pmalloc_space);
 	void *const addr = mmap(0, allocation_size, PROT_READ | PROT_WRITE,
 							MAP_ANON | MAP_PRIVATE, -1, 0);
 
-	pool_data->size = allocation_size;
-	pool_data->addr = addr;
-	pool_data->metadata = NULL;
-	pool_data->type = LARGE;
-	pool_data->allocated_size = allocation_size;
-	pool_data->max_size = allocation_size;
-	pool_data->next = NULL;
-	return pool_data;
+	pool->parent = NULL;
+	pool->left = NULL;
+	pool->right = NULL;
+	pool->height = 1;
+	pool->addr = addr;
+	pool->metadata = NULL;
+	pool->type = LARGE;
+	pool->size = allocation_size;
+	pool->allocated_size = allocation_size;
+	pool->user_space_size = allocation_size;
+
+	return pool;
 }
 
-// shrink pool (when pool is empty)
+/**
+ * @brief remove unused pool
+ *
+ * @param pool
+ * @param manager
+ */
 void shrink_pool(t_pool *const pool, t_mmanager *const manager)
 {
-	t_pool **head;
-	size_t free_pool_count = 0;
+	// In the case of previously existing free_pools, they remain unused for a
+	// long time. Therefore, it is more beneficial for performance to remove the
+	// previously existing free_pool.
+	t_pool *delete_pool = NULL;
+	t_block *block = NULL;
+	t_block **free_list = NULL;
 
 	switch (pool->type) {
 	case TINY:
-		head = &(manager->tiny_pool_head);
+		delete_pool = manager->tiny_free_pool;
+		manager->tiny_free_pool = pool;
+		// delete all blocks
+		free_list = &manager->tiny_free_list[MAX_ORDER_TINY - 1];
 		break;
 	case SMALL:
-		head = &(manager->small_pool_head);
+		delete_pool = manager->small_free_pool;
+		manager->small_free_pool = pool;
+		free_list = &manager->small_free_list[MAX_ORDER_SMALL - 1];
 		break;
 	case LARGE:
 		return; // nothing todo
 	}
-
-	t_pool *node = *head;
-
-	while (node != NULL) {
-		if (node->allocated_size == 0)
-			++free_pool_count;
-		node = node->next;
+	if (delete_pool != NULL) {
+		block = delete_pool->addr;
+		remove_block_from_list(block, free_list);
+		remove_node(delete_pool, &manager->head);
 	}
-	if (free_pool_count >= 2)
-		remove_pool(pool, manager);
 }
 
 /**
  * @brief append pool to pool list in manager
  *
+ * @note it must be called when free pool is not exist
  * @param pool pool object
  * @param manager pool manager
+ * @return t_node * (head)
  */
 void append_pool(t_pool *const pool, t_mmanager *const manager)
 {
+	insert_node(pool, &manager->head);
+
 	switch (pool->type) {
 	case TINY:
-		pool->next = manager->tiny_pool_head;
-		manager->tiny_pool_head = pool;
+		manager->tiny_free_pool = pool;
 		break;
 	case SMALL:
-		pool->next = manager->small_pool_head;
-		manager->small_pool_head = pool;
+		manager->small_free_pool = pool;
 		break;
 	case LARGE:
-		pool->next = manager->large_pool_head;
-		manager->large_pool_head = pool;
-		break;
+		return;
 	}
 }
 
@@ -262,13 +263,12 @@ void append_pool(t_pool *const pool, t_mmanager *const manager)
  * @param order block's order
  * @return void* if success, it returns block. else, returns NULL
  */
-void *remove_block_from_pool(t_block *const block, t_pool *const pool,
-							 size_t order)
+void *remove_block_from_list(t_block *const block, t_block **free_list)
 {
-	t_block *current_block = pool->free_list[order];
+	t_block *current_block = *free_list; // head
 
 	if (current_block == block) {
-		pool->free_list[order] = pool->free_list[order]->next;
+		*free_list = (*free_list)->next;
 		return block;
 	}
 
@@ -288,40 +288,60 @@ void *remove_block_from_pool(t_block *const block, t_pool *const pool,
  * @param pool pool
  * @param order order of block
  */
-void split_block(t_pool *const pool, size_t order)
+void split_block(t_pool *const pool, size_t order, t_block *free_lists[])
 {
 	size_t const minimum_block_size =
 		pool->type == TINY ? MALLOC_TINY_SIZE_MIN : MALLOC_SMALL_SIZE_MIN;
 	size_t const split_size = minimum_block_size << (order - 1);
-	t_block *const left_block = pool->free_list[order];
+	t_block *const left_block = free_lists[order];
 	t_block *const right_block = (t_block *)add_addr(left_block, split_size);
 
-	remove_block_from_pool(left_block, pool, order);
-	set_block_metadata(false, split_size, pool, left_block);
-	set_block_metadata(false, split_size, pool, right_block);
+	remove_block_from_list(left_block, &free_lists[order]);
+	set_block_metadata(false, order - 1, pool, left_block);
+	set_block_metadata(false, order - 1, pool, right_block);
 	// append to free list
 	left_block->next = right_block;
-	right_block->next = pool->free_list[order - 1];
-	pool->free_list[order - 1] = left_block;
+	right_block->next = free_lists[order - 1];
+	free_lists[order - 1] = left_block;
 }
 
 /**
- * @brief Get the block from pool object
+ * @brief Get the block from list object
  *
- * @param pool pool
- * @param request_size allocation request size. must be aligned.
- * @return void* allocated block. if failed, it returns NULL
+ * @param manager
+ * @param order
+ * @param type
+ * @return void* block
  */
-void *get_block_from_pool(t_pool *const pool, size_t request_size)
+void *get_block_from_list(t_mmanager *manager, size_t order, POOL_TYPE type)
 {
-	size_t const MAX_ORDER =
-		pool->type == TINY ? MAX_ORDER_TINY : MAX_ORDER_SMALL;
-	size_t const order = get_order(request_size, pool->type);
-	size_t current_order = order;
+	size_t max_order;
+	size_t min_block_size;
 	t_block *free_block;
+	t_block **free_lists;
+	t_pool **free_pool;
 
-	while (current_order < MAX_ORDER) {
-		free_block = pool->free_list[current_order];
+	switch (type) {
+	case TINY:
+		max_order = MAX_ORDER_TINY;
+		min_block_size = MALLOC_TINY_SIZE_MIN;
+		free_lists = manager->tiny_free_list;
+		free_pool = &manager->tiny_free_pool;
+		break;
+	case SMALL:
+		max_order = MAX_ORDER_SMALL;
+		min_block_size = MALLOC_SMALL_SIZE_MIN;
+		free_lists = manager->small_free_list;
+		free_pool = &manager->small_free_pool;
+		break;
+	case LARGE:
+		return NULL;
+	}
+
+	size_t current_order = order;
+	t_pool *pool;
+	while (current_order < max_order) {
+		free_block = free_lists[current_order];
 		// not found
 		if (free_block == NULL) {
 			++current_order;
@@ -329,15 +349,19 @@ void *get_block_from_pool(t_pool *const pool, size_t request_size)
 		}
 		// found
 		if (order == current_order) {
-			if (remove_block_from_pool(free_block, pool, current_order) == NULL)
+			pool = find_block_pool(free_block, manager);
+			if (remove_block_from_list(free_block, &free_lists[order]) == NULL)
 				return NULL;
-			set_block_metadata(true, request_size, pool, free_block);
-			pool->allocated_size += request_size;
+			set_block_metadata(true, order, pool, free_block);
+			pool->allocated_size += (min_block_size << order);
+			if (pool == *free_pool)
+				*free_pool = NULL;
 			return free_block;
 		}
 		// found but too large to allocate
 		if (order < current_order) {
-			split_block(pool, current_order);
+			pool = find_block_pool(free_block, manager);
+			split_block(pool, current_order, free_lists);
 			--current_order;
 		}
 	}
@@ -346,55 +370,33 @@ void *get_block_from_pool(t_pool *const pool, size_t request_size)
 
 void remove_pool(t_pool *pool, t_mmanager *manager)
 {
-	t_pool **head;
+	t_pool **head = &manager->head;
 
-	switch (pool->type) {
-	case TINY:
-		head = &(manager->tiny_pool_head);
-		break;
-	case SMALL:
-		head = &(manager->small_pool_head);
-		break;
-	case LARGE:
-		head = &(manager->large_pool_head);
-		break;
-	}
-
-	t_pool *node = *head;
-
-	if (node == pool) {
-		*head = node->next;
-		pfree(pool, manager->pmalloc_space);
-		return;
-	}
-	// find previous node and replace next
-	while (node->next != NULL) {
-		if (node->next == pool) {
-			node->next = pool->next;
-			pfree(pool, manager->pmalloc_space);
-			return;
-		}
-		node = node->next;
-	}
+	remove_node(pool, head);
+	pfree(pool, manager->pmalloc_space);
+	return;
 	// abort();
 }
 
-void merge_block(t_block *const block, t_pool *const pool)
+void merge_block(t_block *const block, t_pool *const pool,
+				 t_mmanager *const manager)
 {
 	t_metadata *const metadata = get_block_metadata(pool, block);
 	size_t const block_size = get_block_size(*metadata, pool->type);
 	size_t const bucket_size =
-		pool->type == TINY ? MALLOC_TINY_SIZE_MAX : MALLOC_SMALL_SIZE_MAX;
+		pool->type == TINY ? MALLOC_TINY_POOL_SIZE : MALLOC_SMALL_POOL_SIZE;
 	size_t const position =
 		((size_t)add_addr(block, -(uintptr_t)pool->addr)) % bucket_size;
 	size_t const order = get_block_order(*metadata);
-	size_t const MAX_ORDER =
+	size_t const max_order =
 		pool->type == TINY ? MAX_ORDER_TINY : MAX_ORDER_SMALL;
 	t_block *left_block;
 	t_block *right_block;
+	t_block **free_lists =
+		pool->type == TINY ? manager->tiny_free_list : manager->small_free_list;
 	size_t target_block_size;
 
-	if (order >= MAX_ORDER - 1)
+	if (order >= max_order - 1)
 		return;
 	if (position & block_size) {
 		left_block = (t_block *)add_addr(block, -block_size);
@@ -413,16 +415,22 @@ void merge_block(t_block *const block, t_pool *const pool)
 			target_block_size != block_size)
 			return;
 	}
-	remove_block_from_pool(left_block, pool, order);
-	remove_block_from_pool(right_block, pool, order);
-	set_block_metadata(false, block_size << 1, pool, left_block);
-	set_block_metadata(false, block_size << 1, pool, right_block);
-	append_block(left_block, pool, order + 1);
-	merge_block(left_block, pool);
+	remove_block_from_list(left_block, &free_lists[order]);
+	remove_block_from_list(right_block, &free_lists[order]);
+	set_block_metadata(false, order + 1, pool, left_block);
+	set_block_metadata(false, order + 1, pool, right_block);
+	append_block(left_block, manager, pool->type, order + 1);
+	merge_block(left_block, pool, manager);
 }
 
-void append_block(t_block *const block, t_pool *const pool, size_t order)
+void append_block(t_block *block, t_mmanager *manager, POOL_TYPE type,
+				  size_t order)
 {
-	block->next = pool->free_list[order];
-	pool->free_list[order] = block;
+	if (type == TINY) {
+		block->next = manager->tiny_free_list[order];
+		manager->tiny_free_list[order] = block;
+	} else if (type == SMALL) {
+		block->next = manager->small_free_list[order];
+		manager->small_free_list[order] = block;
+	}
 }

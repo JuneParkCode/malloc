@@ -50,8 +50,6 @@
     - `TINY` 사이즈에서 metadata로 인한 오버헤드는 약 12 % `SMALL` 사이즈에서는 약 1% 이다.
 - Buddy allocation system을 사용하지 않는 `LARGE` 사이즈의 경우, `Pool` 에서 관리하기에 사실상 오버헤드가 0% 에 가깝다.
 
-
-# TODO
 ## 탐색 속도 개선
 - `block` 에 해당 하는 `pool`을 찾는데 시간이 오래 걸리는 문제를 해결하고자한다.
 - 현재 구조에서는 `block` 의 주소는 `pool` 객체의 주소와 관련이 없다.
@@ -93,8 +91,9 @@
     - `t_mmanger` struct 의 내부 요소
         - `tiny_pool_head` / `small_pool_head` / `large_pool_head` 가 삭제된다.
             - 대신, `t_pool *pool_head` 로 통합되어 관리된다.
-        - `bool tiny_has_free_pool` / `bool small_has_free_pool`
-            - type 별로 `pool` 이 관리되고 있지 않기 때문에, 각 type 에서 `free_pool` 이 이미 존재하는 경우, 새로운 `free_pool` 의 경우 즉시 반환하도록 한다.
+        - `tiny_free_pool`, `small_free_pool`
+            - free pool 이 존재하는지 체크하기 위함.
+            - pointer 로 관리해야 allocation 이 되었는지 체크가 간편하다.
         - `t_block *tiny_free_list[MAX_TINY_ORDER]`
         - `t_block *small_free_list[MAX_SMALL_ORDER]`
             - `TINY` / `SMALL` 에 대해서 `free_list` 를 `manager` 에서 관리한다.
@@ -106,17 +105,19 @@
             t_pool *head;
             t_block *tiny_free_list[MAX_ORDER_TINY];
             t_block *small_free_list[MAX_ORDER_SMALL];
-            bool tiny_has_free_pool;
-            bool small_has_free_pool;
+            t_pool *tiny_free_pool;
+            t_pool *small_free_pool;
             t_pmalloc_space *pmalloc_space;
         } t_mmanager;
         ```
 ### 기대효과
 - **NOTE: P = POOL**
 - `free_block` 탐색 속도 개선
-    - O(P) -> O(1)
+    - O(P) -> O(logP)
     - 기존의 경우 `pool` 을 순회하며 `free_block을` 찾아야했다.
         - 높은 확률로 앞쪽 pool 에 `free_block` 이 있으나, 그렇지 않은 경우 문제가 발생한다.
+    - logP 의 경우 block 할당 시 pool 탐색 비용이다
+        - pool 용량 관련 업데이트.
 - `block` 에 해당하는 `pool` 찾는 속도 개선
     - O(P) -> O(logP)
 - `free()` 속도 개선

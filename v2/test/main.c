@@ -5,7 +5,7 @@
 
 int main()
 {
-	const size_t COUNT = 50000;
+	const size_t COUNT = 100000;
 	test_tiny_size(COUNT);
 	test_small_size(COUNT);
 	test_large_size(10);

@@ -1,3 +1,4 @@
+#include "avl_tree.h"
 #include "malloc_pool.h"
 
 t_block *get_block_addr(t_metadata const *metadata, t_pool const *pool)
@@ -17,13 +18,12 @@ t_block *get_block_addr(t_metadata const *metadata, t_pool const *pool)
  * @brief Set the metadata object
  *
  * @param is_allocated block allocation status
- * @param size block size
+ * @param order block order
  * @param type block pool type
  * @return t_metadata metadata_result
  */
-t_metadata set_metadata(bool is_allocated, size_t size, POOL_TYPE type)
+t_metadata set_metadata(bool is_allocated, size_t order)
 {
-	size_t const order = get_order(size, type);
 	return (is_allocated << 7) | (order);
 }
 
@@ -119,16 +119,16 @@ t_metadata *get_block_metadata(t_pool const *const pool,
  * @brief Set the block metadata object
  *
  * @param is_allocated block allocation status
- * @param size block size
+ * @param order block order
  * @param pool pool of block
  * @param block target block
  */
-void set_block_metadata(bool is_allocated, size_t size, t_pool *const pool,
+void set_block_metadata(bool is_allocated, size_t order, t_pool *const pool,
 						t_block *const block)
 {
 	t_metadata *const metadata = get_block_metadata(pool, block);
 
-	*metadata = set_metadata(is_allocated, size, pool->type);
+	*metadata = set_metadata(is_allocated, order);
 }
 
 /**
@@ -159,27 +159,7 @@ bool is_block_pool(t_block const *const block, t_pool const *const pool)
 t_pool *find_block_pool(t_block const *const block,
 						t_mmanager const *const manager)
 {
-	// small block more often freed.
-	t_pool *pools[2] = {manager->tiny_pool_head, manager->small_pool_head};
-	t_pool *pool;
-	for (int i = 0; i < 2; ++i) {
-		pool = pools[i];
-
-		while (pool) {
-			if (is_block_pool(block, pool))
-				return pool;
-			pool = pool->next;
-		}
-	}
-	// large block have to compare with addr
-	pool = manager->large_pool_head;
-	while (pool) {
-		if ((t_pool *)block == pool->addr) {
-			return pool;
-		}
-		pool = pool->next;
-	}
-	return NULL;
+	return find_node((t_key_const)block, manager->head);
 }
 
 void *add_addr(void const *addr, ssize_t size)

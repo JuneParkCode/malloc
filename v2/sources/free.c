@@ -16,8 +16,10 @@ void free(void *ptr)
 	t_block *block = ptr;
 	t_pool *pool = find_block_pool(ptr, &g_manager);
 
-	if (pool == NULL)
+	if (pool == NULL) {
+		pthread_mutex_unlock(&g_mutex);
 		return; // abort();
+	}
 	if (pool->type == LARGE) {
 		remove_pool(pool, &g_manager);
 		pthread_mutex_unlock(&g_mutex);
@@ -28,10 +30,10 @@ void free(void *ptr)
 	size_t order = get_block_order(*metadata);
 	size_t block_size = get_block_size(*metadata, pool->type);
 
-	append_block(block, pool, order);
-	pool->allocated_size -= get_block_size(*metadata, pool->type);
-	*metadata = set_metadata(false, block_size, pool->type);
-	merge_block(block, pool);
+	append_block(block, &g_manager, pool->type, order);
+	pool->allocated_size -= block_size;
+	*metadata = set_metadata(false, order);
+	merge_block(block, pool, &g_manager);
 
 	// shrink process
 	if (pool->allocated_size == 0)

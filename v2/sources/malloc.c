@@ -1,4 +1,5 @@
 #include "malloc.h"
+#include "avl_tree.h"
 #include "malloc_pool.h"
 
 static void memory_construct(void) __CONSTRUCTOR__;
@@ -44,14 +45,21 @@ void memory_construct(void)
 {
 	// allocate space
 	g_manager.pmalloc_space = allocate_pmalloc_space();
-	// init
-	g_manager.tiny_pool_head = NULL;
-	g_manager.small_pool_head = NULL;
-	g_manager.large_pool_head = NULL;
+	// // init
+	g_manager.head = NULL;
+	for (int i = 0; i < MAX_ORDER_TINY; ++i) {
+		g_manager.tiny_free_list[i] = NULL;
+	}
+	for (int i = 0; i < MAX_ORDER_SMALL; ++i) {
+		g_manager.small_free_list[i] = NULL;
+	}
 	// alloc
-	g_manager.tiny_pool_head = create_tiny_pool(&g_manager);
-	g_manager.small_pool_head = create_small_pool(&g_manager);
-	// pthrea mutex
+	t_pool *tiny_pool = create_tiny_pool(&g_manager);
+	t_pool *small_pool = create_small_pool(&g_manager);
+
+	append_pool(tiny_pool, &g_manager);
+	append_pool(small_pool, &g_manager);
+	// // pthrea mutex
 	pthread_mutex_init(&g_mutex, NULL);
 }
 
@@ -62,12 +70,16 @@ void memory_construct(void)
 void memory_destruct(void)
 {
 	// destory all memory pools
-	desturct_pool(g_manager.tiny_pool_head);
-	desturct_pool(g_manager.small_pool_head);
-	desturct_pool(g_manager.large_pool_head);
+	desturct_pool(g_manager.head);
 	// destory all ptr spaces
 	desturct_space(g_manager.pmalloc_space);
 	pthread_mutex_destroy(&g_mutex);
+}
+
+static void free_pool(t_pool *pool)
+{
+	munmap(pool->addr, pool->size);
+	pfree(pool, g_manager.pmalloc_space);
 }
 
 /**
@@ -77,15 +89,7 @@ void memory_destruct(void)
  */
 void desturct_pool(t_pool *const head)
 {
-	t_pool *ptr = head;
-	t_pool *next = NULL;
-
-	while (ptr) {
-		next = ptr->next;
-		munmap(ptr->addr, ptr->size);
-		pfree(ptr, g_manager.pmalloc_space);
-		ptr = next;
-	}
+	map_tree(head, free_pool);
 }
 
 /**

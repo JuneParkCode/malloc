@@ -56,6 +56,12 @@ void show_tree(t_node *tree, char *indent, bool is_last, POS position,
 		return;
 
 	char ind[256];
+	char *colors[] = {
+		"\e[0;33m", "\e[0;32m", "\e[0;31m", "\e[0;34m", "\e[0;35m",
+		// Y G R B M
+	};
+	char *pos = position == LEFT ? "(L)" : position == RIGHT ? "(R)" : "[ROOT]";
+
 	printf("%s", indent);
 	strcpy(ind, indent);
 
@@ -66,12 +72,6 @@ void show_tree(t_node *tree, char *indent, bool is_last, POS position,
 		printf("├──");
 		strcat(ind, "│ ");
 	}
-
-	char *colors[] = {
-		"\e[0;33m", "\e[0;32m", "\e[0;31m", "\e[0;34m", "\e[0;35m",
-		// Y G R B M
-	};
-	char *pos = position == LEFT ? "(L)" : position == RIGHT ? "(R)" : "[ROOT]";
 
 	printf("%s%s %p\e[0m\n", colors[depth % 5], pos, cut(tree->addr));
 	if (tree->left && tree->right) {

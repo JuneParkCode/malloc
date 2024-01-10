@@ -9,18 +9,16 @@ void *realloc(void *ptr, size_t size)
 	void *ret;
 
 	// edge case
-	pthread_mutex_lock(&g_mutex);
 	if (ptr == NULL) {
 		ret = malloc(size);
-		pthread_mutex_unlock(&g_mutex);
 		return ret;
 	}
 	if (size == 0) {
 		free(ptr);
-		pthread_mutex_unlock(&g_mutex);
 		return (NULL);
 	}
 	// operations
+	pthread_mutex_lock(&g_mutex);
 	t_pool *const pool = find_block_pool(ptr, &g_manager);
 	POOL_TYPE const type = pool->type;
 	t_metadata *metadata;
@@ -46,6 +44,7 @@ void *realloc(void *ptr, size_t size)
 		break;
 	}
 	}
+	pthread_mutex_unlock(&g_mutex);
 
 	size_t min_size = current_block_size < request_block_size
 						  ? current_block_size
@@ -57,6 +56,5 @@ void *realloc(void *ptr, size_t size)
 		ft_memcpy(ret, ptr, min_size);
 		free(ptr);
 	}
-	pthread_mutex_unlock(&g_mutex);
 	return (ret);
 }

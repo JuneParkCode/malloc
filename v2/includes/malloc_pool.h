@@ -15,17 +15,25 @@
 #define PAGE_SIZE (getpagesize())
 
 // bucket order max
-#define MAX_ORDER_TINY 6  // 8 ~ 256
-#define MAX_ORDER_SMALL 3 // 512 ~ 4096
+#define MAX_ORDER_TINY_MAX 6  // 8 ~ 256
+#define MAX_ORDER_SMALL_MAX 4 // 512 ~ 4096
+
+#define LEAST_SIZE_ORDER 7 // 128 (2^7)
+
+#define MAX_ORDER_TINY                                                         \
+	(MAX_ORDER_TINY_MAX + LEAST_SIZE_ORDER) // 13,  2 ^ 3~ 2 ^ 16
+#define MAX_ORDER_SMALL                                                        \
+	(MAX_ORDER_SMALL_MAX + LEAST_SIZE_ORDER) // 11 2 ^ 9 ~ 2 ^ 20
+
 // 42 subject requirement
-#define LEAST_SIZE 128
 
 // size definition
 // tiny size definitions
 
 #define MALLOC_TINY_SIZE_MIN (sizeof(size_t))
-#define MALLOC_TINY_SIZE_MAX (MALLOC_TINY_SIZE_MIN << (MAX_ORDER_TINY - 1))
-#define MALLOC_TINY_POOL_SIZE (MALLOC_TINY_SIZE_MAX * LEAST_SIZE) // 32 kb
+#define MALLOC_TINY_SIZE_MAX (MALLOC_TINY_SIZE_MIN << (MAX_ORDER_TINY_MAX - 1))
+#define MALLOC_TINY_POOL_SIZE                                                  \
+	(MALLOC_TINY_SIZE_MAX << LEAST_SIZE_ORDER) // 32 kb
 #define MALLOC_TINY_METADATA_SIZE                                              \
 	(MALLOC_TINY_POOL_SIZE / MALLOC_TINY_SIZE_MIN) // 4 kb ( 1 page )
 #define MALLOC_TINY_ALLOC_SIZE                                                 \
@@ -35,8 +43,9 @@
 
 #define MALLOC_SMALL_SIZE_MIN (MALLOC_TINY_SIZE_MAX << 1) // 512 byte
 #define MALLOC_SMALL_SIZE_MAX                                                  \
-	(MALLOC_SMALL_SIZE_MIN << (MAX_ORDER_SMALL - 1))				// 2048 byte
-#define MALLOC_SMALL_POOL_SIZE (MALLOC_SMALL_SIZE_MAX * LEAST_SIZE) // 256 kb
+	(MALLOC_SMALL_SIZE_MIN << (MAX_ORDER_SMALL_MAX - 1)) // 4096 byte
+#define MALLOC_SMALL_POOL_SIZE                                                 \
+	(MALLOC_SMALL_SIZE_MAX << LEAST_SIZE_ORDER) // 256 kb
 #define MALLOC_SMALL_METADATA_SIZE                                             \
 	(MALLOC_SMALL_POOL_SIZE / MALLOC_SMALL_SIZE_MIN) // 0.5 kb ( 0.25 page )
 #define MALLOC_SMALL_ALLOC_SIZE                                                \
@@ -94,8 +103,8 @@ typedef struct s_pool_space {
 	t_pool *head;
 	t_block *tiny_free_list[MAX_ORDER_TINY];
 	t_block *small_free_list[MAX_ORDER_SMALL];
-	bool tiny_has_free_pool;
-	bool small_has_free_pool;
+	t_pool *tiny_free_pool;
+	t_pool *small_free_pool;
 	t_pmalloc_space *pmalloc_space;
 } t_mmanager;
 
@@ -136,8 +145,8 @@ void append_pool(t_pool *pool, t_mmanager *manager) __INTERNAL__;
 
 // remove block from pool
 
-void *remove_block_from_pool(t_block *const block, t_pool *const pool,
-							 size_t order) __INTERNAL__;
+void *remove_block_from_list(t_block *const block,
+							 t_block **free_list) __INTERNAL__;
 
 // util
 t_block *get_block_addr(t_metadata const *metadata,
@@ -147,11 +156,10 @@ size_t get_block_order(t_metadata info) __INTERNAL__;
 size_t get_block_size(t_metadata metadata, POOL_TYPE type) __INTERNAL__;
 bool is_allocated(t_metadata info) __INTERNAL__;
 size_t get_align_size(size_t size, size_t align) __INTERNAL__;
-t_metadata set_metadata(bool is_allocated, size_t size,
-						POOL_TYPE type) __INTERNAL__;
+t_metadata set_metadata(bool is_allocated, size_t order) __INTERNAL__;
 t_metadata *get_block_metadata(t_pool const *pool,
 							   t_block const *block) __INTERNAL__;
-void set_block_metadata(bool is_allocated, size_t size, t_pool *pool,
+void set_block_metadata(bool is_allocated, size_t order, t_pool *pool,
 						t_block *block) __INTERNAL__;
 t_pool *find_block_pool(t_block const *block,
 						t_mmanager const *manager) __INTERNAL__;
@@ -159,9 +167,15 @@ bool is_block_pool(t_block const *block, t_pool const *pool) __INTERNAL__;
 
 // block
 
-void split_block(t_pool *pool, size_t order) __INTERNAL__;
-void *get_block_from_pool(t_pool *pool, size_t request_size) __INTERNAL__;
-void merge_block(t_block *block, t_pool *pool) __INTERNAL__;
-void append_block(t_block *block, t_pool *pool, size_t order) __INTERNAL__;
+void split_block(t_pool *pool, size_t order,
+				 t_block *free_lists[]) __INTERNAL__;
+void *get_block_from_list(t_mmanager *manager, size_t order,
+						  POOL_TYPE type) __INTERNAL__;
+void merge_block(t_block *block, t_pool *pool,
+				 t_mmanager *const manager) __INTERNAL__;
+void append_block(t_block *block, t_mmanager *manager, POOL_TYPE type,
+				  size_t order) __INTERNAL__;
+
 extern t_mmanager g_manager;
+
 #endif
