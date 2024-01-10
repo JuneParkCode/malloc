@@ -1,8 +1,11 @@
 # malloc
 - 각 디렉토리에 해당 버전에 대한 readme를 참고해주세요.
 ## v1
-- thread-safe 중심으로 설계한 malloc
-- memory 사용량 관련하여 문제가 있습니다.
+- [malloc_v1](https://github.com/JuneParkCode/malloc/tree/main/v1)
+- thread-safe 중점 / 미완성 버전
 ## v2
-- memory 사용량을 최소화하기 위헤 buddy system 도입.
-- multi-thread 상황에 대해서는 대응되어있지 않음.
+- [malloc_v2](https://github.com/JuneParkCode/malloc/tree/main/v2)
+- buddy system 적용 / 완성
+## [deep dive into malloc](https://sungjpar.notion.site/Deep-dive-into-malloc-86cc281b3cdd47b489c3d74ee5533bf3?pvs=4)
+- malloc 을 제작하며 학습한 내용을 정리한 글입니다.
+- malloc() 에서부터 컴퓨터가 메모리를 처리하는 방식까지 깊게 들어가봅니다.
