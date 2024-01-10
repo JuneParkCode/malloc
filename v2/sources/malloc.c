@@ -44,6 +44,8 @@ void *malloc(unsigned long size)
 void memory_construct(void)
 {
 	// allocate space
+	g_manager.free_space = NULL;
+	g_manager.cache_space = NULL;
 	g_manager.pmalloc_space = allocate_pmalloc_space();
 	// // init
 	g_manager.head = NULL;
@@ -79,7 +81,7 @@ void memory_destruct(void)
 static void free_pool(t_pool *pool)
 {
 	munmap(pool->addr, pool->size);
-	pfree(pool, g_manager.pmalloc_space);
+	pfree(pool);
 }
 
 /**

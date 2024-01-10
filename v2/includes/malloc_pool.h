@@ -51,13 +51,16 @@
 #define MALLOC_SMALL_ALLOC_SIZE                                                \
 	(MALLOC_SMALL_POOL_SIZE + MALLOC_SMALL_METADATA_SIZE)
 
-// GET SIZE TYPE, TINY, SMALL, LARGE
+// pmalloc
 
 #define PMALLOC_POOL_SIZE (PAGE_SIZE * 4)
+
 // minumum page usage..
 // [ 4 KB ALIGNED]
 // (PMALLOC_POOL_SIZE + MALLOC_TINY_POOL_SIZE + MALLOC_SMALL_POOL_SIZE) /
 // PAGE_SIZE
+
+// GET SIZE TYPE, TINY, SMALL, LARGE
 
 #define GET_SIZE_TYPE(size)                                                    \
 	((size) <= MALLOC_TINY_SIZE_MAX                                            \
@@ -71,17 +74,19 @@ typedef uint8_t t_metadata;
 
 // block node
 typedef struct s_block {
-	struct s_block *next;
+	struct s_block *next; // can be used as space addr
 } t_block;
 
 // size definitions.. enum
 typedef enum e_pool_type { TINY, SMALL, LARGE } POOL_TYPE;
 
 // pmalloc data space
+// 50 blocks per space (4096 - sizeof(t_malloc_space)) / sizeof(t_pool)
 typedef struct s_pmalloc_space {
 	struct s_pmalloc_space *next;
 	t_block *free_list;
 	size_t size;
+	size_t free_count;
 } t_pmalloc_space;
 
 // pool sturcture
@@ -98,6 +103,10 @@ typedef struct s_pool {
 	size_t user_space_size; // maximum allocation size
 } t_pool;
 
+#define PMALLOC_BLOCK_SIZE (sizeof(void *) + sizeof(t_pool))
+#define PMALLOC_MAX_BLOCK                                                      \
+	((PMALLOC_POOL_SIZE - sizeof(t_pmalloc_space)) / (PMALLOC_BLOCK_SIZE))
+
 // ptr space
 typedef struct s_pool_space {
 	t_pool *head;
@@ -106,6 +115,8 @@ typedef struct s_pool_space {
 	t_pool *tiny_free_pool;
 	t_pool *small_free_pool;
 	t_pmalloc_space *pmalloc_space;
+	t_pmalloc_space *free_space;
+	t_pmalloc_space *cache_space;
 } t_mmanager;
 
 // have to allocate ptr space.
@@ -114,8 +125,8 @@ typedef struct s_pool_space {
 // pappend() -> append ptr space
 
 t_pmalloc_space *allocate_pmalloc_space(void) __INTERNAL__;
-void *pmalloc(t_pmalloc_space *space) __INTERNAL__;
-void pfree(void *ptr, t_pmalloc_space *space) __INTERNAL__;
+void *pmalloc(void) __INTERNAL__;
+void pfree(void *ptr) __INTERNAL__;
 
 // allocate memory. it will return address of memory
 
@@ -132,7 +143,7 @@ t_pool *create_buddy_pool(t_mmanager *const manager,
 						  POOL_TYPE type) __INTERNAL__;
 t_pool *create_tiny_pool(t_mmanager *manager) __INTERNAL__;
 t_pool *create_small_pool(t_mmanager *manager) __INTERNAL__;
-t_pool *create_large_pool(size_t size, t_mmanager *manager) __INTERNAL__;
+t_pool *create_large_pool(size_t size) __INTERNAL__;
 
 // shrink pool (when pool is empty)
 

@@ -75,7 +75,7 @@ void *allocate_small_block(size_t size, t_mmanager *const manager)
  */
 void *allocate_large_block(size_t size, t_mmanager *const manager)
 {
-	t_pool *const pool = create_large_pool(size, manager);
+	t_pool *const pool = create_large_pool(size);
 	void *const ret = pool->addr;
 
 	append_pool(pool, manager);
@@ -112,7 +112,7 @@ t_pool *create_buddy_pool(t_mmanager *const manager, POOL_TYPE type)
 	}
 
 	// allocate pool
-	t_pool *const pool = pmalloc(manager->pmalloc_space);
+	t_pool *const pool = pmalloc();
 	if (pool == NULL)
 		return NULL;
 	void *const addr = mmap(0, allocation_size, PROT_READ | PROT_WRITE,
@@ -172,11 +172,11 @@ t_pool *create_small_pool(t_mmanager *const manager)
  * @return t_pool* allocated pool.
  * @note it must be free by @ref pfree(void *ptr, t_pmalloc_space *const space)
  */
-t_pool *create_large_pool(size_t size, t_mmanager *const manager)
+t_pool *create_large_pool(size_t size)
 {
 	// allocate pool
 	size_t const allocation_size = get_align_size(size, PAGE_SIZE);
-	t_pool *const pool = pmalloc(manager->pmalloc_space);
+	t_pool *const pool = pmalloc();
 	void *const addr = mmap(0, allocation_size, PROT_READ | PROT_WRITE,
 							MAP_ANON | MAP_PRIVATE, -1, 0);
 
@@ -373,7 +373,7 @@ void remove_pool(t_pool *pool, t_mmanager *manager)
 	t_pool **head = &manager->head;
 
 	remove_node(pool, head);
-	pfree(pool, manager->pmalloc_space);
+	pfree(pool);
 	return;
 	// abort();
 }
