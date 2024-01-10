@@ -76,6 +76,8 @@ void *allocate_small_block(size_t size, t_mmanager *const manager)
 void *allocate_large_block(size_t size, t_mmanager *const manager)
 {
 	t_pool *const pool = create_large_pool(size);
+	if (pool == NULL)
+		return NULL;
 	void *const ret = pool->addr;
 
 	append_pool(pool, manager);
@@ -112,13 +114,15 @@ t_pool *create_buddy_pool(t_mmanager *const manager, POOL_TYPE type)
 	}
 
 	// allocate pool
-	t_pool *const pool = pmalloc();
-	if (pool == NULL)
-		return NULL;
 	void *const addr = mmap(0, allocation_size, PROT_READ | PROT_WRITE,
 							MAP_ANON | MAP_PRIVATE, -1, 0);
-	if (addr == NULL)
+	if (addr == MAP_FAILED)
 		return NULL;
+	t_pool *const pool = pmalloc();
+	if (pool == NULL) {
+		munmap(addr, allocation_size);
+		return NULL;
+	}
 
 	// initialize pool block data
 	t_metadata *const metadata_block = (t_metadata *)add_addr(addr, pool_size);
@@ -176,9 +180,15 @@ t_pool *create_large_pool(size_t size)
 {
 	// allocate pool
 	size_t const allocation_size = get_align_size(size, PAGE_SIZE);
-	t_pool *const pool = pmalloc();
 	void *const addr = mmap(0, allocation_size, PROT_READ | PROT_WRITE,
 							MAP_ANON | MAP_PRIVATE, -1, 0);
+	if (addr == MAP_FAILED)
+		return NULL;
+	t_pool *const pool = pmalloc();
+	if (pool == NULL) {
+		munmap(addr, allocation_size);
+		return NULL;
+	}
 
 	pool->parent = NULL;
 	pool->left = NULL;

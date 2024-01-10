@@ -60,7 +60,7 @@ t_pmalloc_space *allocate_pmalloc_space(void)
 		mmap(0, PMALLOC_POOL_SIZE, PROT_READ | PROT_WRITE,
 			 MAP_ANON | MAP_PRIVATE, -1, 0);
 
-	if (space == NULL)
+	if (space == MAP_FAILED)
 		return NULL;
 	// initialize
 	space->size = PMALLOC_POOL_SIZE;

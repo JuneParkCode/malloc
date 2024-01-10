@@ -3,7 +3,7 @@
 
 static int get_size(const long long n)
 {
-	unsigned int nb;
+	unsigned long long nb;
 	int size;
 
 	size = (n < 0);
@@ -27,7 +27,7 @@ static int get_size(const long long n)
 int ft_putnbr(const long long n)
 {
 	const unsigned int size = get_size(n);
-	unsigned int nb;
+	unsigned long long nb;
 	unsigned int idx;
 	char str[50];
 

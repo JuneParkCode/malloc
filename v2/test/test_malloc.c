@@ -100,3 +100,21 @@ void test_random(int count)
 	show_alloc_mem();
 	printf("====%s DONE====\n", __FUNCTION__);
 }
+
+void test_fail_case()
+{
+	printf("====%s START====\n", __FUNCTION__);
+	show_alloc_mem();
+	size_t n = 1;
+	while (n) {
+		printf("%zu malloc()\n", n);
+		char *p = malloc(n);
+		if (p == NULL) {
+			printf("Failed on %zu\n", n);
+		}
+		show_alloc_mem();
+		free(p);
+		n <<= 1;
+	}
+	printf("====%s DONE====\n", __FUNCTION__);
+}
