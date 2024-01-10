@@ -1,6 +1,6 @@
 # DEFAULT COMPILE OPTIONS
 CC = cc
-CFLAGS = -Wall -Wextra -Werror -g3 -O0
+CFLAGS = -Wall -Wextra -Werror
 
 # ABOUT LIBRARY
 ifeq ($(HOSTTYPE),)
@@ -62,9 +62,7 @@ all		: $(NAME)
 # MAKE LIB
 $(NAME)	: $(OBJECTS)
 		$(CC) -o $(NAME) -shared $(CFLAGS) $(OBJECTS)
-#		strip -x $(NAME)
-#		strip --strip-all --discard-all $(NAME)
-#		ar rcs $(NAME) $(OBJECTS)
+		strip -x $(NAME)
 
 
 # MAKE CLEAN
