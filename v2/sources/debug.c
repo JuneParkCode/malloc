@@ -207,3 +207,67 @@ void print_allocation_info(size_t request_size, t_block const *block,
 	ft_putchar('\n');
 	ft_putstr("----------------------------------------\n");
 }
+
+static void *cut(void *ptr)
+{
+	return (void *)((uintptr_t)(ptr) % (uintptr_t)(1 << 20));
+}
+
+void show_tree(t_pool *tree, char *indent, bool is_last, POS position,
+			   int depth)
+{
+	if (tree == NULL)
+		return;
+
+	char ind[256];
+	char *colors[] = {
+		"\e[0;33m", "\e[0;32m", "\e[0;31m", "\e[0;34m", "\e[0;35m",
+		// Y G R B M
+	};
+	char *pos = position == LEFT ? "(L)" : position == RIGHT ? "(R)" : "[ROOT]";
+
+	ft_putstr(indent);
+	ft_strcpy(ind, indent);
+
+	if (is_last) {
+		ft_putstr("└──");
+		ft_strcat(ind, "  ");
+	} else {
+		ft_putstr("├──");
+		ft_strcat(ind, "│ ");
+	}
+
+	ft_putstr(colors[depth % 5]);
+	ft_putstr(" ");
+	ft_putstr(pos);
+	ft_putaddr(cut(tree->addr));
+	ft_putstr("\e[0m\n");
+	if (tree->left && tree->right) {
+		show_tree(tree->left, ind, false, LEFT, depth + 1);
+		show_tree(tree->right, ind, true, RIGHT, depth + 1);
+	} else {
+		show_tree(tree->left, ind, true, LEFT, depth + 1);
+		show_tree(tree->right, ind, true, RIGHT, depth + 1);
+	}
+}
+
+static void print_addr(char *str, t_pool const *node)
+{
+	ft_putstr(str);
+	ft_putstr(" ");
+	if (node != NULL)
+		ft_putaddr(cut(node->addr));
+	else
+		ft_putaddr(NULL);
+}
+
+void show_node(t_pool const *node)
+{
+	if (node == NULL)
+		return;
+	print_addr("addr", node);
+	print_addr("| parent", node->parent);
+	print_addr("| left", node->left);
+	print_addr("| right", node->right);
+	ft_putstr("\n");
+}

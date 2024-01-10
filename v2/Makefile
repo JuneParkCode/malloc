@@ -32,6 +32,8 @@ SRCS			= $(SOURCE_DIR)/malloc.c \
 						$(SOURCE_DIR)/ft_puthex.c \
 						$(SOURCE_DIR)/ft_putnbr.c \
 						$(SOURCE_DIR)/ft_putstr.c \
+						$(SOURCE_DIR)/ft_strcat.c \
+						$(SOURCE_DIR)/ft_strcpy.c \
 						$(SOURCE_DIR)/ft_strlen.c
 OBJECTS			= ${SRCS:.c=.o}
 TEST_SRCS		= $(TEST_DIR)/main.c \

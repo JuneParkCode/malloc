@@ -15,4 +15,7 @@ void ft_print_page_info(void *block_start, void *block_end,
 						size_t size) __INTERNAL__;
 void ft_print_allocated_block_info(void *block_start, void *block_end,
 								   size_t size) __INTERNAL__;
+char *ft_strcat(char *dest, char *src) __INTERNAL__;
+char *ft_strcpy(char *dest, char *src) __INTERNAL__;
+
 #endif

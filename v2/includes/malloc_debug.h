@@ -2,6 +2,7 @@
 #define MALLOC_DEBUG_H
 
 #include "malloc_pool.h"
+#include <stdlib.h>
 
 // print all allocations
 void print_allocations(t_mmanager const *manager) __INTERNAL__;
@@ -23,4 +24,10 @@ void print_large_zone(t_pool const *pool) __INTERNAL__;
 void print_buddy_zone(t_pool const *pool) __INTERNAL__;
 // print pool block info
 void print_pool_blocks_infos(t_pool const *pool) __INTERNAL__;
+
+// to debug in debugger
+typedef enum POS { ROOT, LEFT, RIGHT } POS;
+void show_tree(t_pool *tree, char *indent, bool is_last, POS position,
+			   int depth) __INTERNAL__;
+void show_node(t_pool const *node) __INTERNAL__;
 #endif
