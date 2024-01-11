@@ -120,7 +120,8 @@ t_pool *create_buddy_pool(t_mmanager *const manager, POOL_TYPE type)
 		return NULL;
 	t_pool *const pool = pmalloc();
 	if (pool == NULL) {
-		munmap(addr, allocation_size);
+		if (munmap(addr, allocation_size) == -1)
+			return NULL;
 		return NULL;
 	}
 
@@ -186,7 +187,8 @@ t_pool *create_large_pool(size_t size)
 		return NULL;
 	t_pool *const pool = pmalloc();
 	if (pool == NULL) {
-		munmap(addr, allocation_size);
+		if (munmap(addr, allocation_size) == -1)
+			return NULL;
 		return NULL;
 	}
 

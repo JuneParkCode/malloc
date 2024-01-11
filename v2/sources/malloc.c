@@ -85,7 +85,8 @@ static void free_pool(t_pool *pool)
 	t_pool *right = pool->right;
 
 	free_pool(pool->left);
-	munmap(pool->addr, pool->size);
+	if (munmap(pool->addr, pool->size) == -1)
+		return;
 	pfree(pool);
 	free_pool(right);
 }
@@ -112,7 +113,8 @@ void desturct_space(t_pmalloc_space *const head)
 
 	while (ptr) {
 		next = ptr->next;
-		munmap(ptr, ptr->size);
+		if (munmap(ptr, ptr->size) == -1)
+			return;
 		ptr = next;
 	}
 }

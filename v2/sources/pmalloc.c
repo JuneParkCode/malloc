@@ -113,7 +113,8 @@ static void shrink_space(t_pmalloc_space *const space)
 			}
 			s->next = space->next;
 		}
-		munmap(space, space->size);
+		if (munmap(space, space->size) == -1)
+			return;
 	} else { // free_space == NULL || gg_manager.free_space == space
 		g_manager.free_space = space;
 		g_manager.cache_space = space;
